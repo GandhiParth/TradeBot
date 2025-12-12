@@ -8,7 +8,6 @@ logger = logging.getLogger(__name__)
 
 
 def setup_logger():
-
     root_logger = logging.getLogger()
     if root_logger.handlers:
         for handler in root_logger.handlers:
