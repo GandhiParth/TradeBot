@@ -7,6 +7,21 @@ from typing import Optional
 logger = logging.getLogger(__name__)
 
 
+def setup_logger():
+
+    root_logger = logging.getLogger()
+    if root_logger.handlers:
+        for handler in root_logger.handlers:
+            root_logger.removeHandler(handler)
+
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)s | %(levelname)s | %(name)s | %(funcName)s | %(message)s",
+        datefmt="%Y-%m-%d %H:%M:%S",
+        handlers=[logging.StreamHandler()],
+    )
+
+
 def read_ini_file(file_location: str) -> Optional[configparser.ConfigParser]:
     """
     Reads an ini file and returns a ConfigParser object.
