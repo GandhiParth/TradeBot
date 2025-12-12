@@ -1,0 +1,1 @@
+python3 -m src.jobs.fetch_nse_hist --end_date 2025-12-12 --lookback 10
