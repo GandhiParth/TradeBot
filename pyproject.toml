@@ -13,5 +13,6 @@ dependencies = [
     "pyarrow>=22.0.0",
     "pyotp>=2.9.0",
     "ratelimit>=2.2.1",
+    "ruff>=0.14.9",
     "selenium>=4.39.0",
 ]
