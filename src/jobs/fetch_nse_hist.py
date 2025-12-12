@@ -1,17 +1,20 @@
 import argparse
-from src.brokers.kite.kite import KiteLogin, fetch_kite_instruments, KiteHistorical
-from src.utils import setup_logger
-from conf import download_path, kite as kite_conf
-import polars as pl
-from pathlib import Path
-from datetime import datetime, timedelta
 import logging
+from datetime import datetime, timedelta
+from pathlib import Path
+
+import polars as pl
+
+from conf import download_path
+from conf import kite as kite_conf
+from src.brokers.kite.kite import (KiteHistorical, KiteLogin,
+                                   fetch_kite_instruments)
+from src.utils import setup_logger
 
 logger = logging.getLogger(__name__)
 
 
 def adjust_date_with_lookback(date_str: str, lookback_days: int) -> str:
-
     date_obj = datetime.strptime(date_str, "%Y-%m-%d")
 
     adjusted = date_obj - timedelta(days=lookback_days) - timedelta(days=100)
@@ -52,7 +55,7 @@ def fetch_nse_historical_data(
     pl.scan_parquet(f"{download_path}/NSE.parquet").remove(
         (pl.col("segment") == "NSE")
         & (pl.col("symbol").str.contains("-", literal=True))
-    ).collect().sample(10).write_parquet(save_path)
+    ).collect().write_parquet(save_path)
 
     kite_hist = KiteHistorical(
         kite=kite, file_location=save_path, config_location=kite_conf["kite_conf_path"]

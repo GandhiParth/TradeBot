@@ -1,24 +1,21 @@
 import logging
 import time
+from concurrent.futures import ThreadPoolExecutor
+from datetime import datetime, timedelta
 from typing import Literal, Union
 
+import pandas as pd
+import polars as pl
 from kiteconnect import KiteConnect
 from pyotp import TOTP
+from ratelimit import limits, sleep_and_retry
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.firefox.options import Options as FirefoxOptions
 
 from src.brokers.kite.exceptions import KiteError
-from src.utils import read_ini_file, get_today
-
-import polars as pl
-
-import pandas as pd
-from datetime import datetime, timedelta
-from concurrent.futures import ThreadPoolExecutor, as_completed
-
-from ratelimit import sleep_and_retry, limits
+from src.utils import get_today, read_ini_file
 
 logger = logging.getLogger(__name__)
 
