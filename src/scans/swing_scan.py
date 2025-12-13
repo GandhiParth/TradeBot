@@ -1,8 +1,10 @@
 import polars as pl
-import polars.selectors as cs
 from src.scans.conf import VOLUME_THRESHOLD, filters_dict
 from functools import reduce
 from datetime import datetime
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 def prep_scan_data(
@@ -155,7 +157,10 @@ def find_stocks(
         )
     ).collect()
 
+    min_date = res.select(pl.col("timestamp").min()).item(0, 0)
     max_date = res.select(pl.col("timestamp").max()).item(0, 0)
+
+    logger.info(f"MIN DATE IN DATA: {min_date} & PASEED DATE is {start_date}")
 
     res = (
         res.lazy()
