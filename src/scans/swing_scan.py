@@ -68,9 +68,9 @@ def add_basic_indicators(data: pl.LazyFrame) -> pl.LazyFrame:
             ]
             # RVOL calculation
             + [
-                pl.col("volume")
-                * 100
-                / pl.col("volume_sma_50").round().alias("rvol_pct")
+                (pl.col("volume") * 100 / pl.col("volume_sma_50"))
+                .round()
+                .alias("rvol_pct")
             ]
         )
     )
