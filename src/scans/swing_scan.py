@@ -7,31 +7,9 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-def prep_scan_data(
-    ins_file_path: str,
-    db_conn: str,
-    kite_conf: dict,
-    gains_dict: dict = filters_dict,
-) -> pl.LazyFrame:
-    ins_df = (
-        pl.scan_parquet(ins_file_path)
-        .with_columns(
-            pl.when(pl.col("segment") == "INDICES")
-            .then(False)
-            .otherwise(True)
-            .alias("eq_flag")
-        )
-        .select("symbol", "eq_flag")
-    )
-
-    query = f"""
-            select *
-            from {kite_conf["hist_table_name"]}
-            """
-    df = pl.read_database_uri(query=query, uri=db_conn)
-
+def add_basic_indicators(data: pl.LazyFrame) -> pl.LazyFrame:
     res = (
-        df.lazy()
+        data.lazy()
         .with_columns(pl.col("timestamp").cast(pl.Date()))
         .with_columns(
             # Close SMA expression
@@ -60,10 +38,71 @@ def prep_scan_data(
                 .round(0)
                 .cast(pl.Int64())
                 .alias(f"volume_sma_{n}")
-                for n in [20]
+                for n in [20, 50]
             ]
-            # Shift Columns
+            # Day Range
+            + [(pl.col("high") / pl.col("low")).alias("day_range")]
+        )
+        .with_columns(
+            # ADR calculation
+            [
+                (
+                    (
+                        pl.col("day_range")
+                        .rolling_mean(window_size=i)
+                        .over(
+                            partition_by="symbol",
+                            order_by="timestamp",
+                            descending=False,
+                        )
+                        - 1
+                    )
+                    * 100
+                )
+                .round(2)
+                .alias(f"adr_pct_{i}")
+                for i in [20]
+            ]
+            # RVOL calculation
             + [
+                pl.col("volume")
+                * 100
+                / pl.col("volume_sma_50").round().alias("rvol_pct")
+            ]
+        )
+    )
+
+    return res
+
+
+def prep_scan_data(
+    ins_file_path: str,
+    db_conn: str,
+    kite_conf: dict,
+    gains_dict: dict = filters_dict,
+) -> pl.LazyFrame:
+    ins_df = (
+        pl.scan_parquet(ins_file_path)
+        .with_columns(
+            pl.when(pl.col("segment") == "INDICES")
+            .then(False)
+            .otherwise(True)
+            .alias("eq_flag")
+        )
+        .select("symbol", "eq_flag")
+    )
+
+    query = f"""
+            select *
+            from {kite_conf["hist_table_name"]}
+            """
+    df = pl.read_database_uri(query=query, uri=db_conn)
+    df = add_basic_indicators(data=df)
+
+    res = (
+        df.with_columns(
+            # Shift Columns
+            [
                 pl.col(col)
                 .shift(i)
                 .over(partition_by="symbol", order_by="timestamp", descending=False)
@@ -71,8 +110,6 @@ def prep_scan_data(
                 for col in ["close", "timestamp"]
                 for i in gains_dict
             ]
-            # Day Range
-            + [(pl.col("high") / pl.col("low")).alias("day_range")]
         )
         .with_columns(
             # Gains Calculation
@@ -85,24 +122,6 @@ def prep_scan_data(
                 .round(4)
                 .alias(f"pct_gain_prev_{i}")
                 for i in gains_dict
-            ]
-            # ADR calculation
-            + [
-                (
-                    (
-                        pl.col("day_range")
-                        .rolling_mean(window_size=20)
-                        .over(
-                            partition_by="symbol",
-                            order_by="timestamp",
-                            descending=False,
-                        )
-                        - 1
-                    )
-                    * 100
-                )
-                .round(2)
-                .alias("adr_pct_20")
             ]
         )
         .with_columns(
@@ -117,7 +136,9 @@ def prep_scan_data(
     return res
 
 
-def basic_scan(data: pl.LazyFrame, gains_dict: dict = filters_dict) -> pl.LazyFrame:
+def basic_scan(
+    data: pl.LazyFrame, gains_dict: dict = filters_dict, min_vol: int = VOLUME_THRESHOLD
+) -> pl.LazyFrame:
     pct_gain_expr = reduce(
         lambda a, b: a | b,
         [
@@ -125,15 +146,13 @@ def basic_scan(data: pl.LazyFrame, gains_dict: dict = filters_dict) -> pl.LazyFr
             for days, threshold in gains_dict.items()
         ],
     )
-    res = (
-        data.filter((pl.col("eq_flag") == True) & (pl.col("all_data_flag") == True))
-        .filter(
-            (pl.col("close_ema_9") >= pl.col("close_sma_50"))
-            & (pl.col("close_ema_21") >= pl.col("close_sma_50"))
-            & (pl.col("volume_sma_20") >= VOLUME_THRESHOLD)
-        )
-        .filter(pct_gain_expr)
-    )
+    res = data.filter(
+        (pl.col("eq_flag") == True)
+        & (pl.col("all_data_flag") == True)
+        & (pl.col("close_ema_9") >= pl.col("close_sma_50"))
+        & (pl.col("close_ema_21") >= pl.col("close_sma_50"))
+        & (pl.col("volume_sma_20") >= min_vol)
+    ).filter(pct_gain_expr)
 
     return res
 
@@ -166,5 +185,45 @@ def find_stocks(
         .select("scan_date", "symbol")
         .collect()
     )
+
+    return res
+
+
+def basic_filter(
+    data: pl.LazyFrame,
+    symbol_list: list[str],
+    scan_date: datetime,
+    min_vol: float = VOLUME_THRESHOLD,
+) -> list[str]:
+    logger.info(f"Number of stocks in symbol list: {len(symbol_list)}")
+
+    df = add_basic_indicators(data=data)
+
+    res = (
+        (
+            df.lazy()
+            .with_columns(
+                pl.when(pl.any_horizontal(pl.col("*").is_null()))
+                .then(False)
+                .otherwise(True)
+                .alias("all_data_flag")
+            )
+            .filter(
+                (pl.col("close_ema_9") >= pl.col("close_sma_50"))
+                & (pl.col("close_ema_21") >= pl.col("close_sma_50"))
+                & (pl.col("volume_sma_20") >= min_vol)
+                & (pl.col("timestamp") == scan_date)
+                & (pl.col("symbol").is_in(symbol_list))
+            )
+            .select("symbol")
+            .unique()
+            .sort("symbol")
+        )
+        .collect()
+        .get_column("symbol")
+        .to_list()
+    )
+
+    logger.info(f"Symbols after basic filter: {len(res)}")
 
     return res
