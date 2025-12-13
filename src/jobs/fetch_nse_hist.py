@@ -8,7 +8,7 @@ import polars as pl
 from conf import download_path, db_conn
 from conf import kite as kite_conf
 from src.brokers.kite.kite import KiteHistorical, KiteLogin, fetch_kite_instruments
-from src.utils import setup_logger
+from src.utils import setup_logger, timeit
 
 logger = logging.getLogger(__name__)
 
@@ -21,6 +21,7 @@ def adjust_date_with_lookback(date_str: str, lookback_days: int) -> str:
     return adjusted.strftime("%Y-%m-%d 00:00:00")
 
 
+@timeit
 def fetch_nse_historical_data(
     start_date: str,
     end_date: str,
