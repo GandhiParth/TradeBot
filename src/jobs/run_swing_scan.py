@@ -13,7 +13,6 @@ setup_logger()
 
 
 if __name__ == "__main__":
-
     parser = argparse.ArgumentParser(description="Run Swing Scans")
     parser.add_argument("--end_date", required=True, help="End date YYYY-MM-DD")
     parser.add_argument("--start_date", required=True, help="Start date YYYY-MM-DD")

@@ -13,7 +13,6 @@ def prep_scan_data(
     kite_conf: dict,
     gains_dict: dict = filters_dict,
 ) -> pl.LazyFrame:
-
     ins_df = (
         pl.scan_parquet(ins_file_path)
         .with_columns(
@@ -119,7 +118,6 @@ def prep_scan_data(
 
 
 def basic_scan(data: pl.LazyFrame, gains_dict: dict = filters_dict) -> pl.LazyFrame:
-
     pct_gain_expr = reduce(
         lambda a, b: a | b,
         [
@@ -141,7 +139,6 @@ def basic_scan(data: pl.LazyFrame, gains_dict: dict = filters_dict) -> pl.LazyFr
 
 
 def high_adr_scan(data: pl.LazyFrame, cut_off: float) -> pl.LazyFrame:
-
     res = basic_scan(data=data)
     res = res.filter(pl.col("adr_pct_20") >= cut_off)
 
