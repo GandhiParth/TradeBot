@@ -6,3 +6,6 @@ filters_dict = {
     67: 20,  # close today ≥ close 67 days ago * 1.22
     125: 60,  # close today ≥ close 125 days ago * 1.60
 }
+
+MID_DOWN_COUNT_THRESHOLD = 2
+PULLBACK_NEAR_PCT = 1  # in %
