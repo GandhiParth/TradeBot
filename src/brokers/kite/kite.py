@@ -229,7 +229,7 @@ def fetch_kite_instruments(
             df = pl.from_pandas(df, schema_overrides=ins_schema).rename(
                 {"tradingsymbol": "symbol"}
             )
-            df_path = download_path + f"/{excg}.parquet"
+            df_path = download_path / f"{excg}.parquet"
             df.write_parquet(df_path)
 
             logger.info(f"""Successfully Fetched Instruments for {excg} at {df_path}""")
