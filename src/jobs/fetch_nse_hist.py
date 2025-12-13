@@ -5,10 +5,9 @@ from pathlib import Path
 
 import polars as pl
 
-from conf import download_path
+from conf import download_path, db_conn
 from conf import kite as kite_conf
-from src.brokers.kite.kite import (KiteHistorical, KiteLogin,
-                                   fetch_kite_instruments)
+from src.brokers.kite.kite import KiteHistorical, KiteLogin, fetch_kite_instruments
 from src.utils import setup_logger
 
 logger = logging.getLogger(__name__)
@@ -28,6 +27,7 @@ def fetch_nse_historical_data(
     freq: str = "day",
     conf: dict = kite_conf,
     download_path: str = download_path,
+    db_conn: str = db_conn,
 ):
     """
     Fetches historical data of NSE stocks
@@ -66,7 +66,7 @@ def fetch_nse_historical_data(
         frequency=freq,
         oi_flag=False,
         continuous_flag=False,
-        db_conn="sqlite:////home/parthgandhi/TradeBot/test_hist.db",
+        db_conn=db_conn,
         failed_table_name=conf["failed_hist_table_name"],
         insert_table_name=conf["hist_table_name"],
     )
