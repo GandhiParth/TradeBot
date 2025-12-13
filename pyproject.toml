@@ -9,6 +9,7 @@ dependencies = [
     "ipykernel>=7.1.0",
     "isort>=7.0.0",
     "kiteconnect>=5.0.1",
+    "matplotlib>=3.10.8",
     "pandas>=2.3.3",
     "polars>=1.36.1",
     "pyarrow>=22.0.0",
