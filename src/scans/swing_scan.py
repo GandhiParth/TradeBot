@@ -8,6 +8,9 @@ logger = logging.getLogger(__name__)
 
 
 def add_basic_indicators(data: pl.LazyFrame) -> pl.LazyFrame:
+    """
+    Add SMA, EMA, ADR & RVOL Columns
+    """
     res = (
         data.lazy()
         .with_columns(pl.col("timestamp").cast(pl.Date()))
@@ -81,6 +84,9 @@ def prep_scan_data(
     kite_conf: dict,
     gains_dict: dict = filters_dict,
 ) -> pl.LazyFrame:
+    """
+    Fetch all data from DB and prepare it for scan
+    """
     ins_df = (
         pl.scan_parquet(ins_file_path)
         .with_columns(
@@ -139,6 +145,9 @@ def prep_scan_data(
 def basic_scan(
     data: pl.LazyFrame, gains_dict: dict = filters_dict, min_vol: int = VOLUME_THRESHOLD
 ) -> pl.LazyFrame:
+    """
+    Basic Scan checking if EMA's and Vol are aligned
+    """
     pct_gain_expr = reduce(
         lambda a, b: a | b,
         [
@@ -158,6 +167,9 @@ def basic_scan(
 
 
 def high_adr_scan(data: pl.LazyFrame, cut_off: float) -> pl.LazyFrame:
+    """
+    High ADR cutoff on top of Basic Scan
+    """
     res = basic_scan(data=data)
     res = res.filter(pl.col("adr_pct_20") >= cut_off)
 
@@ -167,6 +179,9 @@ def high_adr_scan(data: pl.LazyFrame, cut_off: float) -> pl.LazyFrame:
 def find_stocks(
     data: pl.LazyFrame, start_date: datetime, end_date: datetime
 ) -> pl.DataFrame:
+    """
+    Get the unique stocks flagged between the date ranges
+    """
     res = data.filter(
         pl.col("timestamp").is_between(
             lower_bound=start_date, upper_bound=end_date, closed="both"
