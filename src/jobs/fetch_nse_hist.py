@@ -6,8 +6,7 @@ import polars as pl
 
 from conf import db_conn, download_path
 from conf import kite as kite_conf
-from src.brokers.kite.kite import (KiteHistorical, KiteLogin,
-                                   fetch_kite_instruments)
+from src.brokers.kite.kite import KiteHistorical, KiteLogin, fetch_kite_instruments
 from src.scans.conf import filters_dict
 from src.utils import setup_logger, timeit
 

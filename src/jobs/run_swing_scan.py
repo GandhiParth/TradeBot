@@ -7,8 +7,7 @@ import polars as pl
 from conf import db_conn, download_path
 from conf import kite as kite_conf
 from conf import scans_save_path
-from src.scans.swing_scan import (basic_scan, find_stocks, high_adr_scan,
-                                  prep_scan_data)
+from src.scans.swing_scan import basic_scan, find_stocks, high_adr_scan, prep_scan_data
 from src.utils import setup_logger
 
 setup_logger()
@@ -51,7 +50,7 @@ if __name__ == "__main__":
         data=adr_scan_df, start_date=start_date, end_date=end_date
     )
     logger.info(
-        f"# Stocks in ADR SCAN: {basic_stocks_df.select(pl.col('symbol').n_unique()).item(0, 0)}"
+        f"# Stocks in ADR SCAN: {adr_stocks_df.select(pl.col('symbol').n_unique()).item(0, 0)}"
     )
 
     basic_scan_df.collect().write_parquet(scans_save_path / "basic_scan.parquet")
