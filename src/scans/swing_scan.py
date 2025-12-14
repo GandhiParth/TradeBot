@@ -44,7 +44,7 @@ def add_basic_indicators(data: pl.LazyFrame) -> pl.LazyFrame:
                 for n in [20, 50]
             ]
             # Day Range
-            + [(pl.col("high") / pl.col("low")).alias("day_range")]
+            + [(pl.col("high") / pl.col("low")).round(4).alias("day_range")]
         )
         .with_columns(
             # ADR calculation

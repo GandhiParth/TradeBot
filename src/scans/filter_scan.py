@@ -53,7 +53,7 @@ def pullback_filter(
     near_pct: float,
     adr_cutoff: float,
     down_count: int = MID_DOWN_COUNT_THRESHOLD,
-):
+) -> pl.DataFrame:
 
     comparisons = [
         (pl.col(f"mid_prev_{i}")) <= pl.col(f"mid_prev_{i + 1}") for i in range(1, 10)
@@ -94,8 +94,10 @@ def pullback_filter(
             & (pl.col("mid_down_count") > down_count)
             & (pl.col("timestamp") == end_date)
             & (pl.col("adr_pct_20") >= adr_cutoff)
+            & (pl.col("rvol_pct") < 50)
         )
         .sort(["rvol_pct", "adr_pct_20"], descending=[False, True])
+        .with_row_index(name="rank", offset=1)
     ).collect()
 
     return res
