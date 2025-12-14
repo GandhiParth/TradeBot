@@ -41,10 +41,10 @@ if __name__ == "__main__":
     )
 
     logger.info(
-        f"MIN DATE for stocks scan: {basic_stocks_df.select(pl.col("timestamp").min().cast(pl.String())).item(0,0)}"
+        f"MIN DATE for stocks scan: {basic_scan_df.select(pl.col("timestamp").min().cast(pl.String())).collect().item(0,0)}"
     )
     logger.info(
-        f"MAX DATE for stocks scan: {basic_stocks_df.select(pl.col("timestamp").max().cast(pl.String())).item(0,0)}"
+        f"MAX DATE for stocks scan: {basic_scan_df.select(pl.col("timestamp").max().cast(pl.String())).collect().item(0,0)}"
     )
     logger.info(
         f"# Stocks in BASIC SCAN: {basic_stocks_df.select(pl.col("symbol").n_unique()).item(0,0)}"
