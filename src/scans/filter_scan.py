@@ -49,6 +49,22 @@ def basic_filter(
     return res
 
 
+def adr_filter(
+    data: pl.LazyFrame | pl.DataFrame, adr_cutoff: float, end_date: datetime
+):
+    df = add_basic_indicators(data=data)
+
+    return (
+        df.lazy()
+        .filter(
+            (pl.col("timestamp") == end_date) & (pl.col("adr_pct_20") >= adr_cutoff)
+        )
+        .sort(["rvol_pct", "adr_pct_20"], descending=[False, True])
+        .with_row_index(name="rank", offset=1)
+        .collect()
+    )
+
+
 def pullback_filter(
     data: pl.LazyFrame,
     end_date: datetime,

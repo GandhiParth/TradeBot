@@ -8,7 +8,7 @@ from conf import db_conn, filter_save_path
 from conf import kite as kite_conf
 from conf import scans_save_path
 from src.scans.conf import PULLBACK_NEAR_PCT
-from src.scans.filter_scan import basic_filter, pullback_filter
+from src.scans.filter_scan import basic_filter, pullback_filter, adr_filter
 from src.utils import setup_logger
 
 setup_logger()
@@ -43,6 +43,14 @@ if __name__ == "__main__":
         data=data, symbol_list=scan_symbol_list, scan_date=end_date
     )
     data = data.filter(pl.col("symbol").is_in(basic_stock_list))
+
+    basic_filter = data.filter(pl.col("timestamp") == end_date)
+    basic_filter.write_csv(filter_save_path / "basic_filter.csv")
+    logger.info(f"# Stocks in Basic Filter: {basic_filter.shape[0]}")
+
+    adr_filter = adr_filter(data=data, adr_cutoff=adr_cutoff, end_date=end_date)
+    adr_filter.write_csv(filter_save_path / "adr_filter.csv")
+    logger.info(f"# Stocks in ADR Filter: {adr_filter.shape[0]}")
 
     pullback_df = pullback_filter(
         data=data, end_date=end_date, near_pct=PULLBACK_NEAR_PCT, adr_cutoff=adr_cutoff
