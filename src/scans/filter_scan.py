@@ -75,6 +75,20 @@ def pullback_filter(
     comparisons = [
         (pl.col(f"mid_prev_{i}")) <= pl.col(f"mid_prev_{i + 1}") for i in range(1, 10)
     ]
+
+    cumulative_conditions = []
+    current_chain = pl.lit(True)
+
+    for cond in comparisons:
+        # "Current streak is alive IF it was alive before AND this condition is met"
+        current_chain = current_chain & cond
+        cumulative_conditions.append(current_chain)
+
+    # 3. Sum the cumulative conditions to get the streak count
+    mid_down_streak_expr = pl.sum_horizontal(cumulative_conditions).alias(
+        "mid_down_streak"
+    )
+
     df = add_basic_indicators(data=data)
     res = (
         df.lazy()
@@ -102,13 +116,14 @@ def pullback_filter(
                 [pl.when(cond).then(1).otherwise(0) for cond in comparisons]
             ).alias("mid_down_count")
         )
+        .with_columns(mid_down_streak_expr)
         .filter(
             (
                 (pl.col("near_close_ema_9") == True)
                 | (pl.col("near_close_ema_21") == True)
                 | (pl.col("near_close_sma_50") == True)
             )
-            & (pl.col("mid_down_count") > down_count)
+            # & (pl.col("mid_down_count") > down_count)
             & (pl.col("timestamp") == end_date)
             & (pl.col("adr_pct_20") >= adr_cutoff)
             & (pl.col("rvol_pct") < 50)
