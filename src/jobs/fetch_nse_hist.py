@@ -1,3 +1,4 @@
+import argparse
 import logging
 from datetime import datetime, timedelta
 
@@ -8,7 +9,9 @@ from conf import kite as kite_conf
 from src.brokers.kite.kite import (KiteHistorical, KiteLogin,
                                    fetch_kite_instruments)
 from src.scans.conf import filters_dict
-from src.utils import timeit
+from src.utils import setup_logger, timeit
+
+setup_logger()
 
 logger = logging.getLogger(__name__)
 
@@ -81,12 +84,6 @@ def fetch_nse_historical_data(
 
 
 if __name__ == "__main__":
-    import argparse
-
-    from src.utils import setup_logger
-
-    setup_logger()
-
     parser = argparse.ArgumentParser(description="Fetch NSE Historical Data")
     parser.add_argument("--end_date", required=True, help="End date YYYY-MM-DD")
     parser.add_argument("--start_date", required=True, help="Start date YYYY-MM-DD")
