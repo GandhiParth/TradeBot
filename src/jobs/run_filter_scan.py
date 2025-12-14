@@ -1,18 +1,15 @@
-from conf import (
-    download_path,
-    db_conn,
-    kite as kite_conf,
-    filter_save_path,
-    scans_save_path,
-)
-from src.utils import setup_logger
 import argparse
-from src.scans.conf import PULLBACK_NEAR_PCT
-from datetime import datetime
-import polars as pl
 import logging
-from src.scans.filter_scan import basic_filter, pullback_filter
+from datetime import datetime
 
+import polars as pl
+
+from conf import db_conn, filter_save_path
+from conf import kite as kite_conf
+from conf import scans_save_path
+from src.scans.conf import PULLBACK_NEAR_PCT
+from src.scans.filter_scan import basic_filter, pullback_filter
+from src.utils import setup_logger
 
 setup_logger()
 logger = logging.getLogger(__name__)

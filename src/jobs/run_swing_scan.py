@@ -1,17 +1,15 @@
-from conf import db_conn, kite as kite_conf, download_path, scans_save_path
-from datetime import datetime
-from src.utils import setup_logger
 import argparse
-from src.scans.swing_scan import (
-    prep_scan_data,
-    basic_scan,
-    high_adr_scan,
-    find_stocks,
-)
-
 import logging
+from datetime import datetime
+
 import polars as pl
 
+from conf import db_conn, download_path
+from conf import kite as kite_conf
+from conf import scans_save_path
+from src.scans.swing_scan import (basic_scan, find_stocks, high_adr_scan,
+                                  prep_scan_data)
+from src.utils import setup_logger
 
 setup_logger()
 logger = logging.getLogger(__name__)
@@ -41,19 +39,19 @@ if __name__ == "__main__":
     )
 
     logger.info(
-        f"MIN DATE for stocks scan: {basic_scan_df.select(pl.col("timestamp").min().cast(pl.String())).collect().item(0,0)}"
+        f"MIN DATE for stocks scan: {basic_scan_df.select(pl.col('timestamp').min().cast(pl.String())).collect().item(0, 0)}"
     )
     logger.info(
-        f"MAX DATE for stocks scan: {basic_scan_df.select(pl.col("timestamp").max().cast(pl.String())).collect().item(0,0)}"
+        f"MAX DATE for stocks scan: {basic_scan_df.select(pl.col('timestamp').max().cast(pl.String())).collect().item(0, 0)}"
     )
     logger.info(
-        f"# Stocks in BASIC SCAN: {basic_stocks_df.select(pl.col("symbol").n_unique()).item(0,0)}"
+        f"# Stocks in BASIC SCAN: {basic_stocks_df.select(pl.col('symbol').n_unique()).item(0, 0)}"
     )
     adr_stocks_df = find_stocks(
         data=adr_scan_df, start_date=start_date, end_date=end_date
     )
     logger.info(
-        f"# Stocks in ADR SCAN: {basic_stocks_df.select(pl.col("symbol").n_unique()).item(0,0)}"
+        f"# Stocks in ADR SCAN: {basic_stocks_df.select(pl.col('symbol').n_unique()).item(0, 0)}"
     )
 
     basic_scan_df.collect().write_parquet(scans_save_path / "basic_scan.parquet")

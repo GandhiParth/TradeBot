@@ -1,8 +1,10 @@
-import polars as pl
-from src.scans.conf import VOLUME_THRESHOLD, filters_dict
-from functools import reduce
-from datetime import datetime
 import logging
+from datetime import datetime
+from functools import reduce
+
+import polars as pl
+
+from src.scans.conf import VOLUME_THRESHOLD, filters_dict
 
 logger = logging.getLogger(__name__)
 

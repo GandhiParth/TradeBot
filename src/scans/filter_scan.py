@@ -1,8 +1,10 @@
-from src.scans.conf import MID_DOWN_COUNT_THRESHOLD, VOLUME_THRESHOLD
-import polars as pl
-from src.scans.swing_scan import add_basic_indicators
-from datetime import datetime
 import logging
+from datetime import datetime
+
+import polars as pl
+
+from src.scans.conf import MID_DOWN_COUNT_THRESHOLD, VOLUME_THRESHOLD
+from src.scans.swing_scan import add_basic_indicators
 
 logger = logging.getLogger(__name__)
 
@@ -54,7 +56,6 @@ def pullback_filter(
     adr_cutoff: float,
     down_count: int = MID_DOWN_COUNT_THRESHOLD,
 ) -> pl.DataFrame:
-
     comparisons = [
         (pl.col(f"mid_prev_{i}")) <= pl.col(f"mid_prev_{i + 1}") for i in range(1, 10)
     ]

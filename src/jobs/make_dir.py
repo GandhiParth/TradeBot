@@ -1,8 +1,9 @@
 if __name__ == "__main__":
-    from pathlib import Path
-    from conf import download_path, scans_save_path, filter_save_path
-    import shutil
     import logging
+    import shutil
+    from pathlib import Path
+
+    from conf import download_path, filter_save_path, scans_save_path
     from src.utils import setup_logger
 
     setup_logger()
