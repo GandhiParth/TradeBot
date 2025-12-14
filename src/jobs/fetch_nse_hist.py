@@ -1,6 +1,5 @@
 import logging
 from datetime import datetime, timedelta
-from pathlib import Path
 
 import polars as pl
 
@@ -16,7 +15,7 @@ def adjust_date_with_lookback(date_str: str, lookback_days: int) -> str:
     date_obj = datetime.strptime(date_str, "%Y-%m-%d")
 
     adjusted = (
-        date_obj - timedelta(days=lookback_days) - timedelta(days=max(filters_dict) * 3)
+        date_obj - timedelta(days=lookback_days) - timedelta(days=max(filters_dict) * 6)
     )
 
     return adjusted.strftime("%Y-%m-%d 00:00:00")
@@ -45,8 +44,6 @@ def fetch_nse_historical_data(
     :param download_path: Description
     :type download_path: str
     """
-
-    Path(download_path).mkdir(parents=True, exist_ok=True)
 
     kite = KiteLogin(credentials_path=kite_conf["kite_cred_path"])()
 
@@ -90,7 +87,6 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Fetch NSE Historical Data")
     parser.add_argument("--end_date", required=True, help="End date YYYY-MM-DD")
     parser.add_argument("--start_date", required=True, help="Start date YYYY-MM-DD")
-    # parser.add_argument("--lookback", required=True, help="Lookback days")
     args = parser.parse_args()
 
     end_date = datetime.strptime(args.end_date, "%Y-%m-%d").strftime(

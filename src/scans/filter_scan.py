@@ -4,7 +4,8 @@ import polars as pl
 from src.scans.swing_scan import basic_filter, add_basic_indicators
 from datetime import datetime
 import logging
-
+from src.utils import setup_logger
+import argparse
 
 logger = logging.getLogger(__name__)
 
@@ -64,9 +65,6 @@ def pullback_filter(
 
 
 if __name__ == "__main__":
-    from src.utils import setup_logger
-    import argparse
-
     parser = argparse.ArgumentParser(description="Run Filter Scans")
     parser.add_argument("--end_date", required=True, help="End date YYYY-MM-DD")
     parser.add_argument("--adr_cutoff", required=True, help="ADR Cutoff")
@@ -96,14 +94,10 @@ if __name__ == "__main__":
     basic_stock_list = basic_filter(
         data=data, symbol_list=scan_symbol_list, scan_date=end_date
     )
-    query = f"""
-    select * 
-    from {kite_conf["hist_table_name"]}
-    where symbol in {tuple(basic_stock_list)}
-    """
-    data = pl.read_database_uri(query=query, uri=db_conn)
+    data = data.filter(pl.col("symbol").is_in(basic_stock_list))
 
     pullback_df = pullback_filter(
         data=data, end_date=end_date, near_pct=PULLBACK_NEAR_PCT, adr_cutoff=adr_cutoff
     )
-    pullback_df.write_parquet(download_path + f"/pullback.parquet")
+    pullback_df.write_csv(download_path + f"/pullback.csv")
+    logger.info(f"# Stocks in PullBack: {pullback_df.shape[0]}")

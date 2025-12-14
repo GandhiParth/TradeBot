@@ -509,6 +509,7 @@ class KiteHistorical:
         symbol_tokens = (
             pl.scan_parquet(source=self._file_location)
             .select("symbol", "instrument_token")
+            .sort("symbol")
             .collect()
             .rows()
         )

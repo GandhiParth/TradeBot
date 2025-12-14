@@ -1,0 +1,31 @@
+# Momentum Squeeze
+# Mobius
+# Added Squeeze Label with directional color
+# Label is green when momentum is ascending, red when descending
+
+input length = 20; #hint length: Length for average calculation
+input price = close;
+input SDmult = 2.0;
+input ATRmult = 1.5;
+
+def K = (Highest(High, length) + Lowest(low, length)) / 2 + ExpAverage(close, length);
+def Momo = Inertia(price - K / 2, length);
+def SD = StDev(close, length);
+def Avg = Average(close, length);
+def ATR = Average(TrueRange(high, close, low), length);
+def SDup = Avg + (SdMult * Sd);
+def ATRup = Avg + (AtrMult * ATR);
+
+def Squeeze = if SDup < ATRup then 0 else Double.NaN;
+
+assignpriceColor(if squeeze ==0 then color.gray else
+if momo > momo[1] then color.blue else color.red
+);
+
+AddLabel(!isNaN(Squeeze), "Squeeze", if isAscending(Momo)
+                                     then Color.Green
+                                     else Color.Red);
+
+                                     https://usethinkscript.com/threads/mark-minervini-trend-template-thinkorswim-scanner.563/page-4#post-62431
+
+#######################################################################################################################################################################

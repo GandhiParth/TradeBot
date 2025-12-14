@@ -146,7 +146,7 @@ def basic_scan(
     data: pl.LazyFrame, gains_dict: dict = filters_dict, min_vol: int = VOLUME_THRESHOLD
 ) -> pl.LazyFrame:
     """
-    Basic Scan checking if EMA's and Vol are aligned
+    Basic Scan checking if EMA's and Vol are aligned along with Past Pct Gains
     """
     pct_gain_expr = reduce(
         lambda a, b: a | b,

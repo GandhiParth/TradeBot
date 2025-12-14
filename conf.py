@@ -1,6 +1,8 @@
 from pathlib import Path
 
 download_path = Path("./downloads").resolve()
+scans_save_path = download_path / "scans"
+filter_save_path = download_path / "filters"
 
 _db_path = Path("downloads/data.db").resolve()
 db_conn = f"sqlite:///{_db_path}"
