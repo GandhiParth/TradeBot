@@ -144,7 +144,6 @@ def vcp_filter(
     pivot_length=5,
     pv_limit=0.1,
 ) -> pl.DataFrame:
-
     df = add_basic_indicators(data=data)
     res = (
         df.lazy()
