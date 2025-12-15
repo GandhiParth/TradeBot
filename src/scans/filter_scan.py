@@ -144,8 +144,10 @@ def vcp_filter(
     pivot_length=5,
     pv_limit=0.1,
 ) -> pl.DataFrame:
+
+    df = add_basic_indicators(data=data)
     res = (
-        data.lazy()
+        df.lazy()
         .with_columns(
             # 52 week high calculation
             pl.col("close")
