@@ -40,6 +40,19 @@ ADR_CUTOFF="${2:-$ADR_CUTOFF_DEFAULT}"
 
 START_DATE="$(date -d "${END_DATE} -3 months" +%Y-%m-%d)"
 
+
+#----------------------------
+# LOGS
+#----------------------------
+LOG_DIR="logs"
+mkdir -p "${LOG_DIR}"
+
+LOG_FILE="${LOG_DIR}/run_swing_pipeline_$(date +%Y-%m-%d).log"
+
+# Overwrite log file on each run, still print to console
+exec > >(tee "${LOG_FILE}") 2>&1
+
+
 echo "========================================"
 echo "Running Swing Trading Pipeline"
 echo "START_DATE=${START_DATE}"
