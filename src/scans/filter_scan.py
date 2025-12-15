@@ -133,3 +133,82 @@ def pullback_filter(
     ).collect()
 
     return res
+
+
+def vcp_filter(
+    data: pl.DataFrame,
+    end_date: datetime,
+    timeframe=252,
+    vol_tf=50,
+    base_lower_limit=0.6,
+    pivot_length=5,
+    pv_limit=0.1,
+) -> pl.DataFrame:
+    res = (
+        data.lazy()
+        .with_columns(
+            # 52 week high calculation
+            pl.col("close")
+            .rolling_max(window_size=timeframe)
+            .over(partition_by="symbol", order_by="timestamp", descending=False)
+            .alias("52_week_high"),
+            # volume sma calculation
+            pl.col("volume")
+            .rolling_mean(window_size=vol_tf)
+            .over(partition_by="symbol", order_by="timestamp", descending=False)
+            .alias(f"volume_sma_{vol_tf}"),
+            # pivot high calculation
+            pl.col("high")
+            .rolling_max(window_size=pivot_length)
+            .over(partition_by="symbol", order_by="timestamp", descending=False)
+            .alias("pivot_high"),
+            # pivot low calculation
+            pl.col("low")
+            .rolling_min(window_size=pivot_length)
+            .over(partition_by="symbol", order_by="timestamp", descending=False)
+            .alias("pivot_low"),
+            # pivot start high
+            pl.col("high")
+            .shift(pivot_length - 1)
+            .over(partition_by="symbol", order_by="timestamp", descending=False)
+            .alias("pivot_start_high"),
+        )
+        .with_columns(
+            # pivot width
+            ((pl.col("pivot_high") - pl.col("pivot_low")) / pl.col("close")).alias(
+                "pivot_width"
+            )
+        )
+        .with_columns(
+            # find pivot
+            (
+                (pl.col("pivot_width") < pv_limit)
+                & (pl.col("pivot_high") == pl.col("pivot_start_high"))
+            ).alias("is_pivot"),
+            # volume dry up
+            pl.all_horizontal(
+                [
+                    pl.col("volume").shift(i) < pl.col(f"volume_sma_{vol_tf}").shift(i)
+                    for i in range(pivot_length)
+                ]
+            )
+            .over(partition_by="symbol", order_by="timestamp", descending=False)
+            .alias("vol_dry_up"),
+            # near 52 week high
+            (
+                (pl.col("close") < pl.col("52_week_high"))
+                & (pl.col("close") > base_lower_limit * pl.col("52_week_high"))
+            ).alias("near_high"),
+        )
+        .filter(
+            pl.col("near_high")
+            & pl.col("is_pivot")
+            & pl.col("vol_dry_up")
+            & (pl.col("timestamp") == end_date)
+            # & pl.col("vol_decreasing")
+        )
+        .sort("symbol")
+        .collect()
+    )
+
+    return res

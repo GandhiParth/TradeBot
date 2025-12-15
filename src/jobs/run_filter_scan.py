@@ -8,7 +8,7 @@ from conf import db_conn, filter_save_path
 from conf import kite as kite_conf
 from conf import scans_save_path
 from src.scans.conf import PULLBACK_NEAR_PCT
-from src.scans.filter_scan import basic_filter, pullback_filter, adr_filter
+from src.scans.filter_scan import basic_filter, pullback_filter, adr_filter, vcp_filter
 from src.utils import setup_logger
 
 setup_logger()
@@ -57,3 +57,7 @@ if __name__ == "__main__":
     )
     pullback_df.write_csv(filter_save_path / "pullback.csv")
     logger.info(f"# Stocks in PullBack: {pullback_df.shape[0]}")
+
+    vcp_df = vcp_filter(data=data, end_date=end_date)
+    vcp_df.write_csv(filter_save_path / "vcp.csv")
+    logger.info(f"# Stocks in VCP: {vcp_df.shape[0]}")
