@@ -176,9 +176,9 @@ def vcp_filter(
         )
         .with_columns(
             # pivot width
-            ((pl.col("pivot_high") - pl.col("pivot_low")) / pl.col("close")).alias(
-                "pivot_width"
-            )
+            ((pl.col("pivot_high") - pl.col("pivot_low")) / pl.col("close"))
+            .round(4)
+            .alias("pivot_width")
         )
         .with_columns(
             # find pivot
