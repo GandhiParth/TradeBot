@@ -1,34 +1,59 @@
-import polars as pl
 import logging
+import time
+
+import polars as pl
 from selenium import webdriver
-from selenium.webdriver.firefox.options import Options as FirefoxOptions
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
-import time
-from selenium.webdriver.common.keys import Keys
-
+from selenium.webdriver.firefox.options import Options as FirefoxOptions
+from sqlalchemy import create_engine
 
 from src.utils import setup_logger
-from src.brokers.nse.conf import (
-    FAILED_TABLE_NAME,
-    CLASSIFICATION_TABLE_NAME,
-    nse_conn,
-    NSE_WEBSITE,
-)
 
 setup_logger()
 
 logger = logging.getLogger(__name__)
 
 
-def prepare_symbol_list(ins_path: str, fetch_date: str, db_conn=nse_conn):
+def create_classification_table(conn: str, conf: dict):
+    """ """
+    engine = create_engine(conn)
 
+    table_id = conf["classification_table_id"]
+
+    with engine.connect() as conn:
+        conn.execute("PRAGMA foreign_keys = ON")
+
+        conn.execute(
+            f"""
+            CREATE TABLE IF NOT EXISTS {table_id} (
+                timestamp TEXT NOT NULL,
+                symbol TEXT NOT NULL,
+                macro_economic_sector TEXT,
+                sector TEXT,
+                industry TEXT,
+                basic_industry TEXT,
+                market_cap_cr REAL,
+                PRIMARY KEY (symbol, timestamp)
+            )
+            """
+        )
+
+        conn.commit()
+
+    logger.info("NSE Classification table created")
+
+
+def prepare_symbol_list(ins_path: str, fetch_date: str, conf: dict, conn: str):
+    """ """
+
+    table_id = conf["classification_table_id"]
     query = f"""
         select symbol
-        from {CLASSIFICATION_TABLE_NAME}
+        from {table_id}
         where timestamp = '{fetch_date}'
     """
-    success_df = pl.read_database_uri(query=query, uri=db_conn)
+    success_df = pl.read_database_uri(query=query, uri=conn)
     success_symbols = success_df.get_column("symbol").to_list()
 
     logger.info(f"# of Symbols data already fecthed for: {len(success_symbols)}")
@@ -68,11 +93,12 @@ def prepare_symbol_list(ins_path: str, fetch_date: str, db_conn=nse_conn):
 def fetch_nse_industry_classification(
     symbol_list: list[str],
     fetch_date: str,
-    nse_website: str = NSE_WEBSITE,
-    db_conn=nse_conn,
+    conf: dict,
+    conn: str,
 ):
-
     count = 0
+
+    logger.info("Starting NSE Classification")
 
     for symbol in symbol_list:
         if count % 100 == 0:
@@ -80,10 +106,12 @@ def fetch_nse_industry_classification(
                 f"Fetched data Successfully for {count}/{len(symbol_list)} symbols"
             )
 
+        options = FirefoxOptions()
+        options.add_argument("--headless")
+        driver = webdriver.Firefox(options=options)
+
         try:
-            options = FirefoxOptions()
-            driver = webdriver.Firefox(options=options)
-            driver.get(nse_website)
+            driver.get(conf["nse_url"])
             driver.implicitly_wait(15)
             driver.maximize_window()
 
@@ -153,14 +181,14 @@ def fetch_nse_industry_classification(
                 "sector": sector,
                 "industry": industry,
                 "basic_industry": basic_industry,
-                "market_cap_cr": market_cap,  # float
+                "market_cap_cr": float(market_cap),
             }
 
             df = pl.DataFrame([data])
 
             df.write_database(
-                table_name=CLASSIFICATION_TABLE_NAME,
-                connection=db_conn,
+                table_name=conf["classification_table_id"],
+                connection=conn,
                 if_table_exists="append",
             )
 
@@ -178,11 +206,11 @@ def fetch_nse_industry_classification(
             df = pl.DataFrame([data])
 
             df.write_database(
-                table_name=FAILED_TABLE_NAME,
-                connection=db_conn,
+                table_name=conf["failed_classification_table_id"],
+                connection=conn,
                 if_table_exists="append",
             )
-        finally:
-            driver.quit()
+
+    driver.quit()
 
     logger.info(f"Fetched data Successfully for {count}/{len(symbol_list)} symbols")
