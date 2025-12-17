@@ -4,8 +4,8 @@ from pathlib import Path
 storage_path = Path("./storage").resolve()
 runs_path = storage_path / "runs"
 core_path = storage_path / "core"
-scans_save_path = runs_path / "scans"
-filter_save_path = runs_path / "filters"
+scans_path = runs_path / "scans"
+filter_path = runs_path / "filters"
 ####################################
 
 
