@@ -6,8 +6,8 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.firefox.options import Options as FirefoxOptions
-from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.support.ui import WebDriverWait
 from sqlalchemy import create_engine, text
 
 from src.utils import setup_logger
@@ -139,7 +139,7 @@ def fetch_nse_industry_classification(
             search_box.send_keys(Keys.ENTER)
 
             wait = WebDriverWait(driver, 10)
-            element = wait.until(
+            _ = wait.until(
                 EC.presence_of_element_located(
                     (
                         By.XPATH,
