@@ -71,7 +71,7 @@ def pullback_filter(
     conf: dict,
 ) -> pl.DataFrame:
     comparisons = [
-        (pl.col(f"mid_prev_{i}")) <= pl.col(f"mid_prev_{i + 1}") for i in range(1, 10)
+        (pl.col(f"mid_prev_{i}")) <= pl.col(f"mid_prev_{i + 1}") for i in range(0, 10)
     ]
 
     cumulative_conditions = []
