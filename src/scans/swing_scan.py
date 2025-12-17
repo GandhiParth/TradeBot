@@ -4,7 +4,6 @@ from functools import reduce
 
 import polars as pl
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -165,12 +164,12 @@ def basic_scan(data: pl.LazyFrame, conf: dict) -> pl.LazyFrame:
     return res
 
 
-def high_adr_scan(data: pl.LazyFrame, cut_off: float, conf: dict) -> pl.LazyFrame:
+def high_adr_scan(data: pl.LazyFrame, adr_cutoff: float, conf: dict) -> pl.LazyFrame:
     """
     High ADR cutoff on top of Basic Scan
     """
     res = basic_scan(data=data, conf=conf)
-    res = res.filter(pl.col("adr_pct_20") >= cut_off)
+    res = res.filter(pl.col("adr_pct_20") >= adr_cutoff)
 
     return res
 
