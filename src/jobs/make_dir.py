@@ -1,32 +1,30 @@
 import logging
 import shutil
-from pathlib import Path
 
-from conf import download_path, filter_save_path, scans_save_path
+from src.conf import storage_path, runs_path, core_path, scans_path, filter_path
 from src.utils import setup_logger
+import argparse
 
 setup_logger()
 
 logger = logging.getLogger(__name__)
 
 if __name__ == "__main__":
-    import logging
-    import shutil
-    from pathlib import Path
+    parser = argparse.ArgumentParser(description="Creating Required Directories")
+    parser.add_argument(
+        "--fetch", action="store_true", help="Whether to run fetch-related dirs"
+    )
+    args = parser.parse_args()
 
-    from conf import download_path, filter_save_path, scans_save_path
-    from src.utils import setup_logger
+    storage_path.mkdir(parents=True, exist_ok=True)
+    core_path.mkdir(parents=True, exist_ok=True)
 
-    setup_logger()
+    if args.fetch:
+        logger.info("Creating runs directories")
+        if runs_path.exists() and runs_path.is_dir():
+            logger.info(f"Deleting Directory {runs_path}")
+            shutil.rmtree(runs_path)
 
-    logger = logging.getLogger(__name__)
-
-    path = Path(download_path)
-
-    if path.exists() and path.is_dir():
-        logger.info(f"Deleting Directory {path}")
-        shutil.rmtree(path)
-
-    path.mkdir(parents=True, exist_ok=True)
-    scans_save_path.mkdir(exist_ok=True)
-    filter_save_path.mkdir(exist_ok=True)
+        runs_path.mkdir(parents=True, exist_ok=True)
+        scans_path.mkdir(exist_ok=True)
+        filter_path.mkdir(exist_ok=True)
