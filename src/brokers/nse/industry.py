@@ -186,10 +186,19 @@ def fetch_nse_industry_classification(
                 "sector": sector,
                 "industry": industry,
                 "basic_industry": basic_industry,
-                "market_cap_cr": float(market_cap),
+                "market_cap_cr": market_cap,
             }
 
-            df = pl.DataFrame([data])
+            df = (
+                pl.DataFrame([data])
+                .lazy()
+                .with_columns(
+                    pl.col("market_cap_cr")
+                    .str.replace_all(pattern=",", literal=True)
+                    .cast(pl.Float64)
+                    .round(2)
+                )
+            )
 
             df.write_database(
                 table_name=conf["classification_table_id"],
