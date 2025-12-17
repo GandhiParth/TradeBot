@@ -6,6 +6,8 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.firefox.options import Options as FirefoxOptions
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 from sqlalchemy import create_engine, text
 
 from src.utils import setup_logger
@@ -105,21 +107,20 @@ def fetch_nse_industry_classification(
 
     logger.info("Starting NSE Classification")
 
+    options = FirefoxOptions()
+    options.add_argument("--headless")
+    driver = webdriver.Firefox(options=options)
+    driver.get(conf["nse_url"])
+    driver.implicitly_wait(15)
+    driver.maximize_window()
+
     for symbol in symbol_list:
         if count % 100 == 0:
             logger.info(
                 f"Fetched data Successfully for {count}/{len(symbol_list)} symbols"
             )
 
-        options = FirefoxOptions()
-        options.add_argument("--headless")
-        driver = webdriver.Firefox(options=options)
-
         try:
-            driver.get(conf["nse_url"])
-            driver.implicitly_wait(15)
-            driver.maximize_window()
-
             search_box = driver.find_element(
                 By.XPATH,
                 "//input[@role='combobox' and contains(@class,'rbt-input-main')]",
@@ -130,12 +131,22 @@ def fetch_nse_industry_classification(
             search_box.send_keys(Keys.BACKSPACE)
 
             for ch in symbol:
-                time.sleep(0.15)
+                time.sleep(0.3)
                 search_box.send_keys(ch)
 
             time.sleep(0.7)
             search_box.send_keys(Keys.ARROW_DOWN)
             search_box.send_keys(Keys.ENTER)
+
+            wait = WebDriverWait(driver, 10)
+            element = wait.until(
+                EC.presence_of_element_located(
+                    (
+                        By.XPATH,
+                        "//span[@role='button' and contains(@aria-label,'Industry Classification')]",
+                    )
+                )
+            )
 
             time.sleep(2.5)
 
@@ -145,7 +156,7 @@ def fetch_nse_industry_classification(
             )
             driver.execute_script("arguments[0].click();", info_btn)
 
-            time.sleep(0.5)
+            time.sleep(1.5)
 
             macro_sector = driver.find_element(
                 By.XPATH,
@@ -165,14 +176,14 @@ def fetch_nse_industry_classification(
                 "//td[normalize-space()='Basic Industry']/following-sibling::td",
             ).text
 
-            time.sleep(1)
+            time.sleep(1.5)
 
             driver.execute_script(
                 "arguments[0].click();",
                 driver.find_element(By.XPATH, "//button[@aria-label='Close']"),
             )
 
-            time.sleep(0.6)  # allow modal overlay to disappear
+            time.sleep(1)  # allow modal overlay to disappear
 
             market_cap = driver.find_element(
                 By.XPATH,
@@ -194,7 +205,7 @@ def fetch_nse_industry_classification(
                 .lazy()
                 .with_columns(
                     pl.col("market_cap_cr")
-                    .str.replace_all(pattern=",", literal=True)
+                    .str.replace_all(pattern=",", value="", literal=True)
                     .cast(pl.Float64)
                     .round(2)
                 )
