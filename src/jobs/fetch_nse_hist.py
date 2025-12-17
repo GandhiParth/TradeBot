@@ -3,23 +3,28 @@ import logging
 from datetime import datetime, timedelta
 
 import polars as pl
+from pathlib import Path
 
-from conf import db_conn, download_path
-from conf import kite as kite_conf
 from src.brokers.kite.kite import KiteHistorical, KiteLogin, fetch_kite_instruments
-from src.scans.conf import filters_dict
 from src.utils import setup_logger, timeit
+from src.conf import kite_conf, runs_path, runs_conn
 
 setup_logger()
 
 logger = logging.getLogger(__name__)
 
 
-def adjust_date_with_lookback(date_str: str, lookback_days: int) -> str:
+def adjust_date_with_lookback(
+    date_str: str, lookback_days: int, max_lookback_return_pct: int
+) -> str:
+    """ """
+
     date_obj = datetime.strptime(date_str, "%Y-%m-%d")
 
     adjusted = (
-        date_obj - timedelta(days=lookback_days) - timedelta(days=max(filters_dict) * 6)
+        date_obj
+        - timedelta(days=lookback_days)
+        - timedelta(days=max_lookback_return_pct * 6)
     )
 
     return adjusted.strftime("%Y-%m-%d 00:00:00")
@@ -29,31 +34,16 @@ def adjust_date_with_lookback(date_str: str, lookback_days: int) -> str:
 def fetch_nse_historical_data(
     start_date: str,
     end_date: str,
+    conf: dict,
+    download_path: Path,
+    conn: str,
     freq: str = "day",
-    conf: dict = kite_conf,
-    download_path: str = download_path,
-    db_conn: str = db_conn,
 ):
-    """
-    Fetches historical data of NSE stocks
+    """ """
 
-    :param start_date: Description
-    :type start_date: str
-    :param end_date: Description
-    :type end_date: str
-    :param freq: Description
-    :type freq: str
-    :param conf: Description
-    :type conf: dict
-    :param download_path: Description
-    :type download_path: str
-    """
-
-    kite = KiteLogin(credentials_path=kite_conf["kite_cred_path"])()
+    kite = KiteLogin(credentials_path=conf["kite_cred_path"])()
 
     fetch_kite_instruments(kite=kite, download_path=download_path, exchanges=["NSE"])
-
-    save_path = f"{download_path}/fetch_symbol.parquet"
 
     df = (
         pl.scan_parquet(f"{download_path}/NSE.parquet")
@@ -65,20 +55,23 @@ def fetch_nse_historical_data(
     )
 
     logger.info(f"Data will be fecthed for {df.shape[0]} symbols")
+
+    save_path = f"{download_path}/fetch_symbol.parquet"
     df.write_parquet(save_path)
 
     kite_hist = KiteHistorical(
-        kite=kite, file_location=save_path, config_location=kite_conf["kite_conf_path"]
+        kite=kite, file_location=save_path, config_location=conf["kite_conf_path"]
     )
+
     kite_hist.get_historical_data(
         start_date=start_date,
         end_date=end_date,
         frequency=freq,
         oi_flag=False,
         continuous_flag=False,
-        db_conn=db_conn,
-        failed_table_name=conf["failed_hist_table_name"],
-        insert_table_name=conf["hist_table_name"],
+        db_conn=conn,
+        failed_table_name=conf["failed_hist_table_id"],
+        insert_table_name=conf["hist_table_id"],
     )
 
 
@@ -103,4 +96,10 @@ if __name__ == "__main__":
 
     logger.info(f"START DATE: {start_date} | END DATE: {end_date}")
 
-    fetch_nse_historical_data(start_date=start_date, end_date=end_date)
+    fetch_nse_historical_data(
+        start_date=start_date,
+        end_date=end_date,
+        conf=kite_conf,
+        download_path=runs_path,
+        conn=runs_conn,
+    )
