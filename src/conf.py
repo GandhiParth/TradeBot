@@ -61,6 +61,13 @@ scans_conf = {
     "volume_threshold": _VOLUME_THRESHOLD,
     "pullback_near_pct": _PULLBACK_NEAR_PCT,
     "lookback_min_return_pct": _LOOKBACK_DAYS_TO_MIN_RETURN_PCT,
+    "vcp_filter_conf": {
+        "timeframe": 252,
+        "volume_timeframe": 50,
+        "base_lower_limit_pct": 60,  # in % eg: 60%
+        "pivot_length": 5,
+        "pivot_width_limit_pct": 10,  # in % eg: 10%
+    },
 }
 
 ###############################
