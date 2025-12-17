@@ -4,10 +4,9 @@ from datetime import datetime
 
 import polars as pl
 
-from conf import db_conn, download_path
-from conf import kite as kite_conf
-from conf import scans_save_path
 from src.scans.swing_scan import basic_scan, find_stocks, high_adr_scan, prep_scan_data
+
+from src.conf import runs_path, runs_conn, scans_path, scans_conf, kite_conf
 from src.utils import setup_logger
 
 setup_logger()
@@ -26,10 +25,12 @@ if __name__ == "__main__":
     adr_cutoff = float(args.adr_cutoff)
 
     master_df = prep_scan_data(
-        ins_file_path=download_path / "NSE.parquet",
-        db_conn=db_conn,
+        ins_file_path=runs_path / "NSE.parquet",
+        conn=runs_conn,
         kite_conf=kite_conf,
+        lookback_min_gains_dict=scans_conf["lookback_min_return_pct"],
     )
+
     basic_scan_df = basic_scan(data=master_df)
     adr_scan_df = high_adr_scan(data=basic_scan_df, cut_off=adr_cutoff)
 
@@ -53,7 +54,7 @@ if __name__ == "__main__":
         f"# Stocks in ADR SCAN: {adr_stocks_df.select(pl.col('symbol').n_unique()).item(0, 0)}"
     )
 
-    basic_scan_df.collect().write_parquet(scans_save_path / "basic_scan.parquet")
-    adr_scan_df.collect().write_parquet(scans_save_path / "adr_scan.parquet")
-    adr_stocks_df.write_parquet(scans_save_path / "adr_stocks.parquet")
-    basic_stocks_df.write_parquet(scans_save_path / "basic_stocks.parquet")
+    basic_scan_df.collect().write_parquet(scans_path / "basic_scan.parquet")
+    adr_scan_df.collect().write_parquet(scans_path / "adr_scan.parquet")
+    adr_stocks_df.write_parquet(scans_path / "adr_stocks.parquet")
+    basic_stocks_df.write_parquet(scans_path / "basic_stocks.parquet")
