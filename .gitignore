@@ -10,5 +10,8 @@ wheels/
 .venv
 
 # Folders
-downloads
+storage
 logs
+
+#DataBase
+*.db
