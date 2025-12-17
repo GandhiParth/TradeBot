@@ -6,7 +6,7 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.firefox.options import Options as FirefoxOptions
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, text
 
 from src.utils import setup_logger
 
@@ -16,16 +16,17 @@ logger = logging.getLogger(__name__)
 
 
 def create_classification_table(conn: str, conf: dict):
-    """ """
     engine = create_engine(conn)
-
     table_id = conf["classification_table_id"]
 
     with engine.connect() as conn:
-        conn.execute("PRAGMA foreign_keys = ON")
+        # Enable foreign keys (SQLite)
+        conn.execute(text("PRAGMA foreign_keys = ON"))
 
+        # Create table if not exists
         conn.execute(
-            f"""
+            text(
+                f"""
             CREATE TABLE IF NOT EXISTS {table_id} (
                 timestamp TEXT NOT NULL,
                 symbol TEXT NOT NULL,
@@ -36,15 +37,19 @@ def create_classification_table(conn: str, conf: dict):
                 market_cap_cr REAL,
                 PRIMARY KEY (symbol, timestamp)
             )
-            """
+        """
+            )
         )
 
+        # Commit changes (needed for SQLite)
         conn.commit()
 
     logger.info("NSE Classification table created")
 
 
-def prepare_symbol_list(ins_path: str, fetch_date: str, conf: dict, conn: str):
+def prepare_symbol_list(
+    ins_path: str, fetch_date: str, conf: dict, conn: str
+) -> list[str]:
     """ """
 
     table_id = conf["classification_table_id"]
