@@ -3,7 +3,6 @@ from datetime import datetime
 
 import polars as pl
 
-from src.scans.conf import MID_DOWN_COUNT_THRESHOLD, VOLUME_THRESHOLD
 from src.scans.swing_scan import add_basic_indicators
 
 logger = logging.getLogger(__name__)
@@ -13,7 +12,7 @@ def basic_filter(
     data: pl.LazyFrame,
     symbol_list: list[str],
     scan_date: datetime,
-    min_vol: float = VOLUME_THRESHOLD,
+    conf: dict,
 ) -> list[str]:
     logger.info(f"Number of stocks in symbol list: {len(symbol_list)}")
 
@@ -31,7 +30,7 @@ def basic_filter(
             .filter(
                 (pl.col("close_ema_9") >= pl.col("close_sma_50"))
                 & (pl.col("close_ema_21") >= pl.col("close_sma_50"))
-                & (pl.col("volume_sma_20") >= min_vol)
+                & (pl.col("volume_sma_20") >= conf["volume_threshold"])
                 & (pl.col("timestamp") == scan_date)
                 & (pl.col("symbol").is_in(symbol_list))
             )
@@ -70,7 +69,7 @@ def pullback_filter(
     end_date: datetime,
     near_pct: float,
     adr_cutoff: float,
-    down_count: int = MID_DOWN_COUNT_THRESHOLD,
+    conf: dict,
 ) -> pl.DataFrame:
     comparisons = [
         (pl.col(f"mid_prev_{i}")) <= pl.col(f"mid_prev_{i + 1}") for i in range(1, 10)
@@ -123,7 +122,6 @@ def pullback_filter(
                 | (pl.col("near_close_ema_21") == True)
                 | (pl.col("near_close_sma_50") == True)
             )
-            # & (pl.col("mid_down_count") > down_count)
             & (pl.col("timestamp") == end_date)
             & (pl.col("adr_pct_20") >= adr_cutoff)
             & (pl.col("rvol_pct") < 50)
@@ -135,16 +133,17 @@ def pullback_filter(
     return res
 
 
-def vcp_filter(
-    data: pl.DataFrame,
-    end_date: datetime,
-    timeframe=252,
-    vol_tf=50,
-    base_lower_limit=0.6,
-    pivot_length=5,
-    pv_limit=0.1,
-) -> pl.DataFrame:
+def vcp_filter(data: pl.DataFrame, end_date: datetime, conf: dict) -> pl.DataFrame:
+    """ """
+
     df = add_basic_indicators(data=data)
+
+    timeframe = conf["timeframe"]
+    volume_timeframe = conf["volume_timeframe"]
+    pivot_length = conf["pivot_length"]
+    pivot_width_limit_pct = conf["pivot_width_limit_pct"]
+    base_lower_limit_pct = conf["base_lower_limit_pct"]
+
     res = (
         df.lazy()
         .with_columns(
@@ -155,9 +154,9 @@ def vcp_filter(
             .alias("52_week_high"),
             # volume sma calculation
             pl.col("volume")
-            .rolling_mean(window_size=vol_tf)
+            .rolling_mean(window_size=volume_timeframe)
             .over(partition_by="symbol", order_by="timestamp", descending=False)
-            .alias(f"volume_sma_{vol_tf}"),
+            .alias(f"volume_sma_{volume_timeframe}"),
             # pivot high calculation
             pl.col("high")
             .rolling_max(window_size=pivot_length)
@@ -176,20 +175,21 @@ def vcp_filter(
         )
         .with_columns(
             # pivot width
-            ((pl.col("pivot_high") - pl.col("pivot_low")) / pl.col("close"))
+            ((pl.col("pivot_high") - pl.col("pivot_low")) * 100 / pl.col("close"))
             .round(4)
             .alias("pivot_width")
         )
         .with_columns(
             # find pivot
             (
-                (pl.col("pivot_width") < pv_limit)
+                (pl.col("pivot_width") < pivot_width_limit_pct)
                 & (pl.col("pivot_high") == pl.col("pivot_start_high"))
             ).alias("is_pivot"),
             # volume dry up
             pl.all_horizontal(
                 [
-                    pl.col("volume").shift(i) < pl.col(f"volume_sma_{vol_tf}").shift(i)
+                    pl.col("volume").shift(i)
+                    < pl.col(f"volume_sma_{volume_timeframe}").shift(i)
                     for i in range(pivot_length)
                 ]
             )
@@ -198,7 +198,10 @@ def vcp_filter(
             # near 52 week high
             (
                 (pl.col("close") < pl.col("52_week_high"))
-                & (pl.col("close") > base_lower_limit * pl.col("52_week_high"))
+                & (
+                    pl.col("close")
+                    > ((base_lower_limit_pct / 100) * pl.col("52_week_high"))
+                )
             ).alias("near_high"),
         )
         .filter(
@@ -206,7 +209,6 @@ def vcp_filter(
             & pl.col("is_pivot")
             & pl.col("vol_dry_up")
             & (pl.col("timestamp") == end_date)
-            # & pl.col("vol_decreasing")
         )
         .sort("symbol")
         .collect()
