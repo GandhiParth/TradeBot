@@ -4,12 +4,11 @@ from functools import reduce
 
 import polars as pl
 
-from src.scans.conf import VOLUME_THRESHOLD, filters_dict
 
 logger = logging.getLogger(__name__)
 
 
-def add_basic_indicators(data: pl.LazyFrame) -> pl.LazyFrame:
+def add_basic_indicators(data: pl.LazyFrame, conf: dict) -> pl.LazyFrame:
     """
     Add SMA, EMA, ADR & RVOL Columns
     """
@@ -84,7 +83,7 @@ def prep_scan_data(
     ins_file_path: str,
     db_conn: str,
     kite_conf: dict,
-    gains_dict: dict = filters_dict,
+    lookback_min_gains_dict: dict,
 ) -> pl.LazyFrame:
     """
     Fetch all data from DB and prepare it for scan
@@ -116,7 +115,7 @@ def prep_scan_data(
                 .over(partition_by="symbol", order_by="timestamp", descending=False)
                 .alias(f"{col}_prev_{i}")
                 for col in ["close", "timestamp"]
-                for i in gains_dict
+                for i in lookback_min_gains_dict
             ]
         )
         .with_columns(
@@ -129,7 +128,7 @@ def prep_scan_data(
                 )
                 .round(4)
                 .alias(f"pct_gain_prev_{i}")
-                for i in gains_dict
+                for i in lookback_min_gains_dict
             ]
         )
         .with_columns(
@@ -144,9 +143,7 @@ def prep_scan_data(
     return res
 
 
-def basic_scan(
-    data: pl.LazyFrame, gains_dict: dict = filters_dict, min_vol: int = VOLUME_THRESHOLD
-) -> pl.LazyFrame:
+def basic_scan(data: pl.LazyFrame, conf: dict) -> pl.LazyFrame:
     """
     Basic Scan checking if EMA's and Vol are aligned along with Past Pct Gains
     """
@@ -154,7 +151,7 @@ def basic_scan(
         lambda a, b: a | b,
         [
             pl.col(f"pct_gain_prev_{days}") >= threshold
-            for days, threshold in gains_dict.items()
+            for days, threshold in conf["lookback_min_return_pct"].items()
         ],
     )
     res = data.filter(
@@ -162,7 +159,7 @@ def basic_scan(
         & (pl.col("all_data_flag") == True)
         & (pl.col("close_ema_9") >= pl.col("close_sma_50"))
         & (pl.col("close_ema_21") >= pl.col("close_sma_50"))
-        & (pl.col("volume_sma_20") >= min_vol)
+        & (pl.col("volume_sma_20") >= conf["volume_threshold"])
     ).filter(pct_gain_expr)
 
     return res
