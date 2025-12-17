@@ -209,6 +209,7 @@ def fetch_nse_industry_classification(
                     .cast(pl.Float64)
                     .round(2)
                 )
+                .collect()
             )
 
             df.write_database(
