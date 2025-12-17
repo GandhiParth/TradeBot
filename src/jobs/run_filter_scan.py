@@ -4,13 +4,9 @@ from datetime import datetime
 
 import polars as pl
 
-from src.conf import db_conn, filter_save_path
-from src.conf import kite as kite_conf
-from src.conf import scans_save_path
-from src.scans.conf import PULLBACK_NEAR_PCT
-from src.scans.filter_scan import (adr_filter, basic_filter, pullback_filter,
-                                   vcp_filter)
+from src.scans.filter_scan import adr_filter, basic_filter, pullback_filter, vcp_filter
 from src.utils import setup_logger
+from src.conf import scans_path, filter_path, kite_conf, runs_conn, scans_conf
 
 setup_logger()
 logger = logging.getLogger(__name__)
@@ -25,7 +21,7 @@ if __name__ == "__main__":
     adr_cutoff = float(args.adr_cutoff)
 
     scan_symbol_list = (
-        pl.scan_parquet(scans_save_path / "adr_stocks.parquet")
+        pl.scan_parquet(scans_path / "adr_stocks.parquet")
         .collect()
         .get_column("symbol")
         .to_list()
@@ -35,30 +31,32 @@ if __name__ == "__main__":
 
     query = f"""
     select * 
-    from {kite_conf["hist_table_name"]}
+    from {kite_conf["hist_table_id"]}
     where symbol in {tuple(scan_symbol_list)}
     """
-    data = pl.read_database_uri(query=query, uri=db_conn)
+    data = pl.read_database_uri(query=query, uri=runs_conn)
 
     basic_stock_list = basic_filter(
-        data=data, symbol_list=scan_symbol_list, scan_date=end_date
+        data=data, symbol_list=scan_symbol_list, scan_date=end_date, conf=scans_conf
     )
     data = data.filter(pl.col("symbol").is_in(basic_stock_list))
 
     basic_filter = data.filter(pl.col("timestamp") == end_date)
-    basic_filter.write_csv(filter_save_path / "basic_filter.csv")
+    basic_filter.write_csv(filter_path / "basic_filter.csv")
     logger.info(f"# Stocks in Basic Filter: {basic_filter.shape[0]}")
 
     adr_filter = adr_filter(data=data, adr_cutoff=adr_cutoff, end_date=end_date)
-    adr_filter.write_csv(filter_save_path / "adr_filter.csv")
+    adr_filter.write_csv(filter_path / "adr_filter.csv")
     logger.info(f"# Stocks in ADR Filter: {adr_filter.shape[0]}")
 
     pullback_df = pullback_filter(
-        data=data, end_date=end_date, near_pct=PULLBACK_NEAR_PCT, adr_cutoff=adr_cutoff
+        data=data, end_date=end_date, adr_cutoff=adr_cutoff, conf=scans_conf
     )
-    pullback_df.write_csv(filter_save_path / "pullback.csv")
+    pullback_df.write_csv(filter_path / "pullback.csv")
     logger.info(f"# Stocks in PullBack: {pullback_df.shape[0]}")
 
-    vcp_df = vcp_filter(data=data, end_date=end_date)
-    vcp_df.write_csv(filter_save_path / "vcp.csv")
+    vcp_df = vcp_filter(
+        data=data, end_date=end_date, conf=scans_conf["vcp_filter_conf"]
+    )
+    vcp_df.write_csv(filter_path / "vcp.csv")
     logger.info(f"# Stocks in VCP: {vcp_df.shape[0]}")

@@ -73,7 +73,7 @@ cd "${SCRIPT_DIR}"
 if [[ "${RUN_FETCH}" == true ]]; then
   echo "[1/3] Fetching NSE historical data..."
 
-  python3 -m src.jobs.make_dir
+  python3 -m src.jobs.make_dir --fetch
 
   python3 -m src.jobs.fetch_nse_hist \
     --start_date "${START_DATE}" \
@@ -82,6 +82,7 @@ if [[ "${RUN_FETCH}" == true ]]; then
   echo "[1/3] NSE data fetch completed"
 else
   echo "[1/3] Skipping data fetch (use --fetch to enable)"
+  python3 -m src.jobs.make_dir
 fi
 
 # -----------------------------

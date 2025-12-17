@@ -7,7 +7,7 @@ from pathlib import Path
 
 from src.brokers.kite.kite import KiteHistorical, KiteLogin, fetch_kite_instruments
 from src.utils import setup_logger, timeit
-from src.conf import kite_conf, runs_path, runs_conn
+from src.conf import kite_conf, runs_path, runs_conn, scans_conf
 
 setup_logger()
 
@@ -52,6 +52,7 @@ def fetch_nse_historical_data(
             & (pl.col("symbol").str.contains("-", literal=True))
         )
         .collect()
+        .sample(20)
     )
 
     logger.info(f"Data will be fecthed for {df.shape[0]} symbols")
@@ -92,7 +93,11 @@ if __name__ == "__main__":
         - datetime.strptime(args.start_date, "%Y-%m-%d")
     ).days
 
-    start_date = adjust_date_with_lookback(args.end_date, lookback_days=lookback)
+    start_date = adjust_date_with_lookback(
+        args.end_date,
+        lookback_days=lookback,
+        max_lookback_return_pct=max(scans_conf["lookback_min_return_pct"]),
+    )
 
     logger.info(f"START DATE: {start_date} | END DATE: {end_date}")
 

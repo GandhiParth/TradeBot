@@ -31,8 +31,8 @@ if __name__ == "__main__":
         lookback_min_gains_dict=scans_conf["lookback_min_return_pct"],
     )
 
-    basic_scan_df = basic_scan(data=master_df)
-    adr_scan_df = high_adr_scan(data=basic_scan_df, cut_off=adr_cutoff)
+    basic_scan_df = basic_scan(data=master_df, conf=scans_conf)
+    adr_scan_df = high_adr_scan(data=basic_scan_df, cut_off=adr_cutoff, conf=scans_conf)
 
     basic_stocks_df = find_stocks(
         data=basic_scan_df, start_date=start_date, end_date=end_date

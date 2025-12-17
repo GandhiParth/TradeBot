@@ -8,7 +8,7 @@ import polars as pl
 logger = logging.getLogger(__name__)
 
 
-def add_basic_indicators(data: pl.LazyFrame, conf: dict) -> pl.LazyFrame:
+def add_basic_indicators(data: pl.LazyFrame) -> pl.LazyFrame:
     """
     Add SMA, EMA, ADR & RVOL Columns
     """
@@ -101,7 +101,7 @@ def prep_scan_data(
 
     query = f"""
             select *
-            from {kite_conf["hist_table_name"]}
+            from {kite_conf["hist_table_id"]}
             """
     df = pl.read_database_uri(query=query, uri=conn)
     df = add_basic_indicators(data=df)
@@ -165,11 +165,11 @@ def basic_scan(data: pl.LazyFrame, conf: dict) -> pl.LazyFrame:
     return res
 
 
-def high_adr_scan(data: pl.LazyFrame, cut_off: float) -> pl.LazyFrame:
+def high_adr_scan(data: pl.LazyFrame, cut_off: float, conf: dict) -> pl.LazyFrame:
     """
     High ADR cutoff on top of Basic Scan
     """
-    res = basic_scan(data=data)
+    res = basic_scan(data=data, conf=conf)
     res = res.filter(pl.col("adr_pct_20") >= cut_off)
 
     return res

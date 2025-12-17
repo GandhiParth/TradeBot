@@ -67,7 +67,6 @@ def adr_filter(
 def pullback_filter(
     data: pl.LazyFrame,
     end_date: datetime,
-    near_pct: float,
     adr_cutoff: float,
     conf: dict,
 ) -> pl.DataFrame:
@@ -105,7 +104,7 @@ def pullback_filter(
             + [
                 (
                     ((pl.col("mid_prev_0") - pl.col(col)).abs() * 100 / pl.col(col))
-                    <= near_pct
+                    <= conf["pullback_near_pct"]
                 ).alias(f"near_{col}")
                 for col in ["close_ema_9", "close_ema_21", "close_sma_50"]
             ]
