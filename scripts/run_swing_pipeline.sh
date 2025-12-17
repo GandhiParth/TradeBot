@@ -40,14 +40,22 @@ ADR_CUTOFF="${2:-$ADR_CUTOFF_DEFAULT}"
 
 START_DATE="$(date -d "${END_DATE} -3 months" +%Y-%m-%d)"
 
+# -----------------------------
+# Ensure we are at project root
+# -----------------------------
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(dirname "${SCRIPT_DIR}")"
+cd "${PROJECT_ROOT}"
 
 #----------------------------
 # LOGS
 #----------------------------
-LOG_DIR="logs"
+LOG_DIR="${PROJECT_ROOT}/logs"
 mkdir -p "${LOG_DIR}"
-
 LOG_FILE="${LOG_DIR}/run_swing_pipeline_$(date +%Y-%m-%d).log"
+
+## ENV
+source .venv/bin/activate
 
 # Overwrite log file on each run, still print to console
 exec > >(tee "${LOG_FILE}") 2>&1
@@ -61,11 +69,7 @@ echo "ADR_CUTOFF=${ADR_CUTOFF}"
 echo "RUN_FETCH=${RUN_FETCH}"
 echo "========================================"
 
-# -----------------------------
-# Ensure we are at project root
-# -----------------------------
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-cd "${SCRIPT_DIR}"
+
 
 # -----------------------------
 # Step 1: Fetch NSE historical data (optional)
