@@ -81,7 +81,7 @@ def add_basic_indicators(data: pl.LazyFrame, conf: dict) -> pl.LazyFrame:
 
 def prep_scan_data(
     ins_file_path: str,
-    db_conn: str,
+    conn: str,
     kite_conf: dict,
     lookback_min_gains_dict: dict,
 ) -> pl.LazyFrame:
@@ -103,7 +103,7 @@ def prep_scan_data(
             select *
             from {kite_conf["hist_table_name"]}
             """
-    df = pl.read_database_uri(query=query, uri=db_conn)
+    df = pl.read_database_uri(query=query, uri=conn)
     df = add_basic_indicators(data=df)
 
     res = (
