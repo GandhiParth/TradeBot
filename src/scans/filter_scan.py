@@ -2,6 +2,7 @@ import logging
 from datetime import datetime
 
 import polars as pl
+import polars.selectors as cs
 
 from src.scans.swing_scan import add_basic_indicators
 
@@ -122,6 +123,7 @@ def pullback_filter(
         )
         .sort(["adr_pct_20", "rvol_pct"], descending=[True, False])
         .with_row_index(name="rank", offset=1)
+        .select(~cs.starts_with("mid_prev"))
     ).collect()
 
     return res
