@@ -67,18 +67,15 @@ def prepare_symbol_list(
 
     ins_df = (
         pl.scan_parquet(ins_path)
-        .remove(
-            (pl.col("segment") == "INDICES")
-            | (pl.col("name").str.contains(r"^SDL.*%"))
-            | (pl.col("name") == "")
-            | (pl.col("name").str.starts_with("GOI TBILL"))
-            | (pl.col("name").str.contains("GOLDBONDS", literal=True))
-            | (pl.col("name").str.contains("RE.", literal=True))
-            | (pl.col("symbol").str.ends_with("-GS"))
-        )
         .with_columns(
-            pl.col("symbol").str.split(by="-").list.first().alias("search_symbol")
+            pl.col("symbol")
+            .str.split(by="-")
+            .list.get(index=1, null_on_oob=True)
+            .fill_null("EQ")
+            .alias("suffix")
         )
+        .filter(pl.col("suffix").is_in(["RR", "IV", "EQ"]))
+        .remove(pl.col("segment") == "INDICES")
         .select("search_symbol")
         .collect()
     )

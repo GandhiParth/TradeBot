@@ -5,8 +5,7 @@ from pathlib import Path
 
 import polars as pl
 
-from src.brokers.kite.kite import (KiteHistorical, KiteLogin,
-                                   fetch_kite_instruments)
+from src.brokers.kite.kite import KiteHistorical, KiteLogin, fetch_kite_instruments
 from src.conf import kite_conf, runs_conn, runs_path, scans_conf
 from src.utils import setup_logger, timeit
 
@@ -48,10 +47,14 @@ def fetch_nse_historical_data(
 
     df = (
         pl.scan_parquet(f"{download_path}/NSE.parquet")
-        .remove(
-            (pl.col("segment") == "NSE")
-            & (pl.col("symbol").str.contains("-", literal=True))
+        .with_columns(
+            pl.col("symbol")
+            .str.split(by="-")
+            .list.get(index=1, null_on_oob=True)
+            .fill_null("EQ")
+            .alias("suffix")
         )
+        .filter(pl.col("suffix").is_in(["RR", "IV", "EQ"]))
         .collect()
     )
 
