@@ -5,7 +5,8 @@ from datetime import datetime
 import polars as pl
 
 from src.conf import filter_path, kite_conf, runs_conn, scans_conf, scans_path
-from src.scans.filter_scan import adr_filter, basic_filter, pullback_filter, vcp_filter
+from src.scans.filter_scan import (adr_filter, basic_filter, pullback_filter,
+                                   vcp_filter)
 from src.utils import setup_logger
 
 setup_logger()

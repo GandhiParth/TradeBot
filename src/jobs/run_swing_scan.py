@@ -5,7 +5,8 @@ from datetime import datetime
 import polars as pl
 
 from src.conf import kite_conf, runs_conn, runs_path, scans_conf, scans_path
-from src.scans.swing_scan import basic_scan, find_stocks, high_adr_scan, prep_scan_data
+from src.scans.swing_scan import (basic_scan, find_stocks, high_adr_scan,
+                                  prep_scan_data)
 from src.utils import setup_logger
 
 setup_logger()

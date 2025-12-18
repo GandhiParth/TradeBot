@@ -69,7 +69,6 @@ def pullback_filter(
     end_date: datetime,
     conf: dict,
 ) -> pl.DataFrame:
-
     comparisons = [
         (pl.col(f"mid_prev_{i}")) <= pl.col(f"mid_prev_{i + 1}") for i in range(0, 10)
     ]

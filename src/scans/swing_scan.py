@@ -63,7 +63,7 @@ def add_basic_indicators(data: pl.LazyFrame) -> pl.LazyFrame:
             + [
                 (
                     (
-                        ((pl.min_horizontal("open", "close") - pl.col("low")))
+                        (pl.min_horizontal("open", "close") - pl.col("low"))
                         / (pl.col("high") - pl.col("low"))
                     ).rolling_mean(window_size=n)
                     * 100
@@ -77,7 +77,7 @@ def add_basic_indicators(data: pl.LazyFrame) -> pl.LazyFrame:
             + [
                 (
                     (
-                        ((pl.col("high") - pl.max_horizontal("open", "close")))
+                        (pl.col("high") - pl.max_horizontal("open", "close"))
                         / (pl.col("high") - pl.col("low"))
                     ).rolling_mean(window_size=n)
                     * 100
