@@ -88,6 +88,8 @@ def pullback_filter(
         "mid_down_streak"
     )
 
+    _rvol_cutoff = 100
+
     df = add_basic_indicators(data=data)
     res = (
         df.lazy()
@@ -119,12 +121,16 @@ def pullback_filter(
             )
             & (pl.col("timestamp") == end_date)
             & (pl.col("adr_pct_20") >= adr_cutoff)
-            & (pl.col("rvol_pct") < 100)
+            & (pl.col("rvol_pct") < _rvol_cutoff)
         )
         .sort(["adr_pct_20", "rvol_pct"], descending=[True, False])
         .with_row_index(name="rank", offset=1)
         .select(~cs.starts_with("mid_prev"))
     ).collect()
+
+    logger.info(
+        f"PullBack filter with ADR Cutoff >= {adr_cutoff} & RVOL PCT <= {_rvol_cutoff}"
+    )
 
     return res
 
