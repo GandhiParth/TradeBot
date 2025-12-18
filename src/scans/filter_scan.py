@@ -58,7 +58,7 @@ def adr_filter(
         .filter(
             (pl.col("timestamp") == end_date) & (pl.col("adr_pct_20") >= adr_cutoff)
         )
-        .sort(["rvol_pct", "adr_pct_20"], descending=[False, True])
+        .sort(["adr_pct_20", "rvol_pct"], descending=[True, False])
         .with_row_index(name="rank", offset=1)
         .collect()
     )
@@ -117,7 +117,7 @@ def pullback_filter(
             )
             & (pl.col("timestamp") == end_date)
         )
-        .sort(["rvol_pct", "adr_pct_20"], descending=[False, True])
+        .sort(["adr_pct_20", "rvol_pct"], descending=[True, False])
         .with_row_index(name="rank", offset=1)
     ).collect()
 
@@ -201,7 +201,8 @@ def vcp_filter(data: pl.DataFrame, end_date: datetime, conf: dict) -> pl.DataFra
             & pl.col("vol_dry_up")
             & (pl.col("timestamp") == end_date)
         )
-        .sort("symbol")
+        .sort(["adr_pct_20", "rvol_pct"], descending=[True, False])
+        .with_row_index(name="rank", offset=1)
         .collect()
     )
 
