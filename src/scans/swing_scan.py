@@ -45,6 +45,48 @@ def add_basic_indicators(data: pl.LazyFrame) -> pl.LazyFrame:
             ]
             # Day Range
             + [(pl.col("high") / pl.col("low")).round(4).alias("day_range")]
+            # Body to Range ratio
+            + [
+                (
+                    (
+                        ((pl.col("open") - pl.col("close")).abs())
+                        / (pl.col("high") - pl.col("low"))
+                    ).rolling_mean(window_size=n)
+                    * 100
+                )
+                .over(partition_by="symbol", order_by="timestamp", descending=False)
+                .round(2)
+                .alias(f"body_by_range_pct_sma_{n}")
+                for n in [50]
+            ]
+            # Lower Wick to Body Ratio
+            + [
+                (
+                    (
+                        ((pl.min_horizontal("open", "close") - pl.col("low")))
+                        / (pl.col("high") - pl.col("low"))
+                    ).rolling_mean(window_size=n)
+                    * 100
+                )
+                .over(partition_by="symbol", order_by="timestamp", descending=False)
+                .round(2)
+                .alias(f"lower_wick_by_range_pct_sma_{n}")
+                for n in [50]
+            ]
+            # Uppwer Wick to Body Ratio
+            + [
+                (
+                    (
+                        ((pl.col("high") - pl.max_horizontal("open", "close")))
+                        / (pl.col("high") - pl.col("low"))
+                    ).rolling_mean(window_size=n)
+                    * 100
+                )
+                .over(partition_by="symbol", order_by="timestamp", descending=False)
+                .round(2)
+                .alias(f"upper_wick_by_range_pct_sma_{n}")
+                for n in [50]
+            ]
         )
         .with_columns(
             # ADR calculation
