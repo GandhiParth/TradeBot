@@ -67,9 +67,9 @@ def adr_filter(
 def pullback_filter(
     data: pl.LazyFrame,
     end_date: datetime,
-    adr_cutoff: float,
     conf: dict,
 ) -> pl.DataFrame:
+
     comparisons = [
         (pl.col(f"mid_prev_{i}")) <= pl.col(f"mid_prev_{i + 1}") for i in range(0, 10)
     ]
@@ -109,11 +109,6 @@ def pullback_filter(
                 for col in ["close_ema_9", "close_ema_21", "close_sma_50"]
             ]
         )
-        .with_columns(
-            pl.sum_horizontal(
-                [pl.when(cond).then(1).otherwise(0) for cond in comparisons]
-            ).alias("mid_down_count")
-        )
         .with_columns(mid_down_streak_expr)
         .filter(
             (
@@ -122,8 +117,6 @@ def pullback_filter(
                 | (pl.col("near_close_sma_50") == True)
             )
             & (pl.col("timestamp") == end_date)
-            & (pl.col("adr_pct_20") >= adr_cutoff)
-            & (pl.col("rvol_pct") < 50)
         )
         .sort(["rvol_pct", "adr_pct_20"], descending=[False, True])
         .with_row_index(name="rank", offset=1)

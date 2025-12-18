@@ -52,9 +52,7 @@ if __name__ == "__main__":
     logger.info(f"# Stocks in ADR Filter: {adr_filter_df.shape[0]}")
 
     # Pullback filter
-    pullback_df = pullback_filter(
-        data=data, end_date=end_date, adr_cutoff=adr_cutoff, conf=scans_conf
-    )
+    pullback_df = pullback_filter(data=data, end_date=end_date, conf=scans_conf)
     pullback_df.write_csv(filter_path / "pullback.csv")
     logger.info(f"# Stocks in PullBack: {pullback_df.shape[0]}")
 
