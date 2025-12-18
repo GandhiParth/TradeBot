@@ -114,6 +114,16 @@ def add_basic_indicators(data: pl.LazyFrame) -> pl.LazyFrame:
                 .round()
                 .alias("rvol_pct")
             ]
+            # Clean Score Calculation
+            + [
+                (
+                    pl.col(f"body_by_range_pct_sma_{n}")
+                    * (100 - pl.col(f"lower_wick_by_range_pct_sma_{n}"))
+                )
+                .round(2)
+                .alias(f"clean_score_pct_{n}")
+                for n in [50]
+            ]
         )
     )
 
