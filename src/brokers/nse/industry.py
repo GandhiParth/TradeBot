@@ -243,6 +243,16 @@ def fetch_nse_industry_classification(
                 if_table_exists="append",
             )
 
+            logger.warning("Error Occured: Restarting Driver")
+
+            driver.quit()
+            options = FirefoxOptions()
+            options.add_argument("--headless")
+            driver = webdriver.Firefox(options=options)
+            driver.get(conf["nse_url"])
+            driver.implicitly_wait(15)
+            driver.maximize_window()
+
     driver.quit()
 
     logger.info(f"Fetched data Successfully for {count}/{len(symbol_list)} symbols")
