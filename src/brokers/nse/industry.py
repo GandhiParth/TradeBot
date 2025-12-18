@@ -204,6 +204,12 @@ def fetch_nse_industry_classification(
                 pl.DataFrame([data])
                 .lazy()
                 .with_columns(
+                    pl.when(pl.col("market_cap_cr") == "-")
+                    .then(None)
+                    .otherwise(pl.col("market_cap_cr"))
+                    .alias("market_cap_cr")
+                )
+                .with_columns(
                     pl.col("market_cap_cr")
                     .str.replace_all(pattern=",", value="", literal=True)
                     .cast(pl.Float64)
