@@ -5,8 +5,7 @@ from datetime import datetime
 import polars as pl
 
 from src.conf import filter_path, kite_conf, runs_conn, scans_conf, scans_path
-from src.scans.filter_scan import (adr_filter, basic_filter, pullback_filter,
-                                   vcp_filter)
+from src.scans.filter_scan import adr_filter, basic_filter, pullback_filter, vcp_filter
 from src.utils import setup_logger
 
 setup_logger()
@@ -53,7 +52,9 @@ if __name__ == "__main__":
     logger.info(f"# Stocks in ADR Filter: {adr_filter_df.shape[0]}")
 
     # Pullback filter
-    pullback_df = pullback_filter(data=data, end_date=end_date, conf=scans_conf)
+    pullback_df = pullback_filter(
+        data=data, adr_cutoff=adr_cutoff, end_date=end_date, conf=scans_conf
+    )
     pullback_df.write_csv(filter_path / "pullback.csv")
     logger.info(f"# Stocks in PullBack: {pullback_df.shape[0]}")
 

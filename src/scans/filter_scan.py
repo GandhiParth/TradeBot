@@ -66,6 +66,7 @@ def adr_filter(
 
 def pullback_filter(
     data: pl.LazyFrame,
+    adr_cutoff: float,
     end_date: datetime,
     conf: dict,
 ) -> pl.DataFrame:
@@ -116,6 +117,8 @@ def pullback_filter(
                 | (pl.col("near_close_sma_50") == True)
             )
             & (pl.col("timestamp") == end_date)
+            & (pl.col("adr_pct_20") >= adr_cutoff)
+            & (pl.col("rvol_pct") < 100)
         )
         .sort(["adr_pct_20", "rvol_pct"], descending=[True, False])
         .with_row_index(name="rank", offset=1)
