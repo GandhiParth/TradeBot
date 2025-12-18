@@ -5,8 +5,7 @@ from datetime import datetime
 import polars as pl
 
 from src.conf import kite_conf, runs_conn, runs_path, scans_conf, scans_path
-from src.scans.swing_scan import (basic_scan, find_stocks, high_adr_scan,
-                                  prep_scan_data)
+from src.scans.swing_scan import basic_scan, find_stocks, high_adr_scan, prep_scan_data
 from src.utils import setup_logger
 
 setup_logger()
@@ -56,7 +55,7 @@ if __name__ == "__main__":
         f"# Stocks in ADR SCAN: {adr_stocks_df.select(pl.col('symbol').n_unique()).item(0, 0)}"
     )
 
-    basic_scan_df.collect().write_parquet(scans_path / "basic_scan.parquet")
-    adr_scan_df.collect().write_parquet(scans_path / "adr_scan.parquet")
-    adr_stocks_df.write_parquet(scans_path / "adr_stocks.parquet")
-    basic_stocks_df.write_parquet(scans_path / "basic_stocks.parquet")
+    basic_scan_df.collect().write_csv(scans_path / "basic_scan.csv")
+    adr_scan_df.collect().write_csv(scans_path / "adr_scan.csv")
+    adr_stocks_df.write_csv(scans_path / "adr_stocks.csv")
+    basic_stocks_df.write_csv(scans_path / "basic_stocks.csv")
