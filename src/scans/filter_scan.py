@@ -212,3 +212,34 @@ def vcp_filter(data: pl.DataFrame, end_date: datetime, conf: dict) -> pl.DataFra
     )
 
     return res
+
+
+def sma_200_filter(data: pl.DataFrame, end_date: datetime) -> pl.DataFrame:
+    """ """
+
+    df = add_basic_indicators(data=data)
+
+    res = (
+        df.lazy()
+        .with_columns(
+            [
+                pl.col("close")
+                .rolling_mean(window_size=n)
+                .over(partition_by="symbol", order_by="timestamp", descending=False)
+                .round(2)
+                .alias(f"close_sma_{n}")
+                for n in [200]
+            ]
+        )
+        .filter(
+            (pl.col("close_sma_50") >= pl.col("close_sma_200"))
+            & (pl.col("close_ema_9") >= pl.col("close_sma_200"))
+            & (pl.col("close_ema_21") >= pl.col("close_sma_200"))
+            & (pl.col("timestamp") == end_date)
+        )
+        .sort(["adr_pct_20", "rvol_pct"], descending=[True, False])
+        .with_row_index(name="rank", offset=1)
+        .collect()
+    )
+
+    return res

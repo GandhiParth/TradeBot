@@ -5,7 +5,13 @@ from datetime import datetime
 import polars as pl
 
 from src.conf import filter_path, kite_conf, runs_conn, scans_conf, scans_path
-from src.scans.filter_scan import adr_filter, basic_filter, pullback_filter, vcp_filter
+from src.scans.filter_scan import (
+    adr_filter,
+    basic_filter,
+    pullback_filter,
+    vcp_filter,
+    sma_200_filter,
+)
 from src.utils import setup_logger
 
 setup_logger()
@@ -45,6 +51,11 @@ if __name__ == "__main__":
     basic_filter_df = data.filter(pl.col("timestamp") == end_date)
     basic_filter_df.write_csv(filter_path / "basic_filter.csv")
     logger.info(f"# Stocks in Basic Filter: {basic_filter_df.shape[0]}")
+
+    # 200 SMA filter
+    sma_200_filter_df = sma_200_filter(data=data, end_date=end_date)
+    sma_200_filter_df.write_csv(filter_path / "sma_200_filter.csv")
+    logger.info(f"# Stocks in SMA 200 Filter: {sma_200_filter_df.shape[0]}")
 
     # ADR filter
     adr_filter_df = adr_filter(data=data, adr_cutoff=adr_cutoff, end_date=end_date)
