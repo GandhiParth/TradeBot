@@ -119,14 +119,23 @@ def pullback_filter(
                 | (pl.col("near_close_ema_21") == True)
                 | (pl.col("near_close_sma_50") == True)
             )
-            & (pl.col("timestamp") == end_date)
             # & (pl.col("adr_pct_20") >= adr_cutoff)
             # & (pl.col("rvol_pct") < _rvol_cutoff)
         )
+        .with_columns(
+            pl.col("timestamp")
+            .sort()
+            .implode()
+            .over(partition_by="symbol")
+            .alias("flag_dates")
+        )
+        .filter((pl.col("timestamp") == end_date))
         .sort(["adr_pct_20", "rvol_pct"], descending=[True, False])
         .with_row_index(name="rank", offset=1)
         .select(~cs.starts_with("mid_prev"))
     ).collect()
+
+    logger.info(res.schema)
 
     # logger.info(
     #     f"PullBack filter with ADR Cutoff >= {adr_cutoff} & RVOL PCT <= {_rvol_cutoff}"
