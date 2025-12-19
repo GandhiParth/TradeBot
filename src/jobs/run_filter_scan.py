@@ -5,8 +5,13 @@ from datetime import datetime
 import polars as pl
 
 from src.conf import filter_path, kite_conf, runs_conn, scans_conf, scans_path
-from src.scans.filter_scan import (adr_filter, basic_filter, pullback_filter,
-                                   sma_200_filter, vcp_filter)
+from src.scans.filter_scan import (
+    adr_filter,
+    basic_filter,
+    pullback_filter,
+    sma_200_filter,
+    vcp_filter,
+)
 from src.utils import setup_logger
 
 setup_logger()
@@ -48,16 +53,22 @@ if __name__ == "__main__":
     logger.info(f"# Stocks in Basic Filter: {basic_filter_df.shape[0]}")
 
     # 200 SMA filter
+    basic_filter_stocks = basic_filter_df.get_column("symbol").to_list()
+    data = data.filter(pl.col("symbol").is_in(basic_filter_stocks))
     sma_200_filter_df = sma_200_filter(data=data, end_date=end_date)
     sma_200_filter_df.write_csv(filter_path / "sma_200_filter.csv")
     logger.info(f"# Stocks in SMA 200 Filter: {sma_200_filter_df.shape[0]}")
 
     # ADR filter
+    sma_200_filter_stocks = sma_200_filter_df.get_column("symbol").to_list()
+    data = data.filter(pl.col("symbol").is_in(sma_200_filter_stocks))
     adr_filter_df = adr_filter(data=data, adr_cutoff=adr_cutoff, end_date=end_date)
     adr_filter_df.write_csv(filter_path / "adr_filter.csv")
     logger.info(f"# Stocks in ADR Filter: {adr_filter_df.shape[0]}")
 
     # Pullback filter
+    adr_filter_stocks = adr_filter_df.get_column("symbol").to_list()
+    data = data.filter(pl.col("symbol").is_in(adr_filter_stocks))
     pullback_df = pullback_filter(
         data=data, adr_cutoff=adr_cutoff, end_date=end_date, conf=scans_conf
     )
