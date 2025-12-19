@@ -55,7 +55,7 @@ _LOOKBACK_DAYS_TO_MIN_RETURN_PCT = {
 }
 
 _MID_DOWN_COUNT_THRESHOLD = 2
-_PULLBACK_NEAR_PCT = 1  # in %
+_PULLBACK_NEAR_PCT = 1.5  # in %
 
 scans_conf = {
     "volume_threshold": _VOLUME_THRESHOLD,
