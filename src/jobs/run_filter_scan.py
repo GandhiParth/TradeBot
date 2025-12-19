@@ -75,6 +75,7 @@ if __name__ == "__main__":
         data=data, adr_cutoff=adr_cutoff, end_date=end_date, conf=scans_conf
     )
     pullback_df.write_csv(filter_path / "pullback.csv")
+    pullback_df.write_parquet(filter_path / "pullback.parquet")
     logger.info(f"# Stocks in PullBack: {pullback_df.shape[0]}")
 
     # VCP filter
