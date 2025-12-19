@@ -5,13 +5,8 @@ from datetime import datetime
 import polars as pl
 
 from src.conf import filter_path, kite_conf, runs_conn, scans_conf, scans_path
-from src.scans.filter_scan import (
-    adr_filter,
-    basic_filter,
-    pullback_filter,
-    vcp_filter,
-    sma_200_filter,
-)
+from src.scans.filter_scan import (adr_filter, basic_filter, pullback_filter,
+                                   sma_200_filter, vcp_filter)
 from src.utils import setup_logger
 
 setup_logger()
@@ -27,7 +22,7 @@ if __name__ == "__main__":
     adr_cutoff = float(args.adr_cutoff)
 
     scan_symbol_list = (
-        pl.scan_csv(scans_path / "adr_stocks.csv")
+        pl.scan_csv(scans_path / "basic_stocks.csv")
         .collect()
         .get_column("symbol")
         .to_list()
