@@ -135,8 +135,6 @@ def pullback_filter(
         .select(~cs.starts_with("mid_prev"))
     ).collect()
 
-    logger.info(res.schema)
-
     # logger.info(
     #     f"PullBack filter with ADR Cutoff >= {adr_cutoff} & RVOL PCT <= {_rvol_cutoff}"
     # )
