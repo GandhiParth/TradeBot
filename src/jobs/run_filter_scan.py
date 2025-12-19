@@ -66,9 +66,11 @@ if __name__ == "__main__":
     adr_filter_df.write_csv(filter_path / "adr_filter.csv")
     logger.info(f"# Stocks in ADR Filter: {adr_filter_df.shape[0]}")
 
-    # Pullback filter
+    # Final ADR Filter
     adr_filter_stocks = adr_filter_df.get_column("symbol").to_list()
     data = data.filter(pl.col("symbol").is_in(adr_filter_stocks))
+
+    # Pullback filter
     pullback_df = pullback_filter(
         data=data, adr_cutoff=adr_cutoff, end_date=end_date, conf=scans_conf
     )
