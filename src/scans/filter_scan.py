@@ -118,9 +118,9 @@ def pullback_filter(
                 (pl.col("near_close_ema_9") == True)
                 | (pl.col("near_close_ema_21") == True)
                 | (pl.col("near_close_sma_50") == True)
+                # & (pl.col("adr_pct_20") >= adr_cutoff)
+                # & (pl.col("rvol_pct") < _rvol_cutoff)
             )
-            # & (pl.col("adr_pct_20") >= adr_cutoff)
-            # & (pl.col("rvol_pct") < _rvol_cutoff)
         )
         .with_columns(
             pl.col("timestamp")

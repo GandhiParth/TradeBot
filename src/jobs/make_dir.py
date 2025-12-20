@@ -2,8 +2,7 @@ import argparse
 import logging
 import shutil
 
-from src.conf import (core_path, filter_path, runs_path, scans_path,
-                      storage_path)
+from src.conf import core_path, filter_path, runs_path, scans_path, storage_path
 from src.utils import setup_logger
 
 setup_logger()

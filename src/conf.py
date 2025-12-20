@@ -22,7 +22,7 @@ _HISTORICAL_TABLE_ID = "historical"
 _HISTORICAL__FAILED_TABLE_ID = "historical_failed"
 
 kite_conf = {
-    "kite_cred_path": "/home/parthgandhi/TradeBot_archive/credentials/kite.ini",
+    "kite_cred_path": "/home/parthgandhi/conf/credentials/kite.ini",
     "kite_conf_path": Path("./src/brokers/kite/conf.ini").resolve(),
     "hist_table_id": _HISTORICAL_TABLE_ID,
     "failed_hist_table_id": _HISTORICAL__FAILED_TABLE_ID,
