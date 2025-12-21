@@ -3,7 +3,6 @@ from datetime import date
 
 from src.config.market import Market
 from src.config.exchange import Exchange
-from src.config.exchange_tables import EXCHG_TABLES
 import logging
 from src.config.storage_layout import StorageLayout
 

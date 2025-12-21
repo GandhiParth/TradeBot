@@ -133,7 +133,7 @@ def add_basic_indicators(data: pl.LazyFrame) -> pl.LazyFrame:
 
 def prep_scan_data(
     conn: str,
-    kite_conf: dict,
+    table_id: str,
     lookback_min_gains_dict: dict,
 ) -> pl.LazyFrame:
     """
@@ -142,7 +142,7 @@ def prep_scan_data(
 
     query = f"""
             select *
-            from {kite_conf["hist_table_id"]}
+            from {table_id}
             """
     df = pl.read_database_uri(query=query, uri=conn)
     df = add_basic_indicators(data=df)
@@ -230,6 +230,7 @@ def find_stocks(
     max_date = res.select(pl.col("timestamp").max()).item(0, 0)
 
     logger.info(f"MIN DATE IN DATA: {min_date} & PASEED DATE is {start_date}")
+    logger.info(f"MAX DATE IN DATA: {max_date}")
 
     res = (
         res.lazy()
