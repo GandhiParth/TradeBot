@@ -21,6 +21,7 @@ class Kite(BaseBroker):
     def fetch_ohlcv(self):
         df = (
             pl.scan_parquet(self._download_path / "instruments.parquet")
+            .remove(pl.col(pl.col("segment") == "INDICES"))
             .with_columns(
                 pl.col("symbol")
                 .str.split(by="-")
