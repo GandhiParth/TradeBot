@@ -1,11 +1,9 @@
 import argparse
 import logging
 
-from src.brokers.nse.industry import (
-    create_classification_table,
-    fetch_nse_industry_classification,
-    prepare_symbol_list,
-)
+from src.brokers.nse.industry import (create_classification_table,
+                                      fetch_nse_industry_classification,
+                                      prepare_symbol_list)
 from src.conf import core_conn, nse_conf, runs_path
 from src.utils import setup_logger
 

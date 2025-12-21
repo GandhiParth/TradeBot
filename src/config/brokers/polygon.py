@@ -1,15 +1,15 @@
 from pathlib import Path
-from src.config.market import Market
+
 from src.config.exchange import Exchange
+from src.config.market import Market
 
 
 class PolygonConfig:
     NAME = "POLYGON"
 
-    SUPPORTED_MARKETS = {Market.US_EQUITIES}
-    SUPPROTED_EXCHANGES = {Exchange.NYSE, Exchange.NASDAQ}
+    SUPPORTED = {Market.US_EQUITIES: {Exchange.NYSE, Exchange.NASDAQ}}
 
-    CREDENTIALS_PATH = Path("/home/parthgandhi/conf/credentials/polygon.ini")
+    CREDENTIALS_PATH = Path("/home/parthgandhi/.conf/credentials/polygon.ini")
 
     LOOKBACK_DAYS_LIMIT = 365 * 2
 

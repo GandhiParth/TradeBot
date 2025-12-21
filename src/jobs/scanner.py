@@ -1,29 +1,26 @@
-import logging
-from src.utils import setup_logger
-from src.config.run_modes import RUN_MODES
 import argparse
-from datetime import datetime, timedelta
-from src.config.exchange_tables import EXCHG_TABLES
-from src.config.storage_layout import StorageLayout
+import logging
 import shutil
-from src.scans.swing_scan import basic_scan, find_stocks, high_adr_scan, prep_scan_data
+from datetime import datetime, timedelta
 from pathlib import Path
-from src.config.scans import scans_conf, filter_conf
+
 import polars as pl
-from src.scans.filter_scan import (
-    adr_filter,
-    basic_filter,
-    pullback_filter,
-    sma_200_filter,
-    vcp_filter,
-)
+
+from src.config.exchange_tables import EXCHG_TABLES
+from src.config.run_modes import RUN_MODES
+from src.config.scans import filter_conf, scans_conf
+from src.config.storage_layout import StorageLayout
+from src.scans.filter_scan import (adr_filter, basic_filter, pullback_filter,
+                                   sma_200_filter, vcp_filter)
+from src.scans.swing_scan import (basic_scan, find_stocks, high_adr_scan,
+                                  prep_scan_data)
+from src.utils import setup_logger
 
 logger = logging.getLogger(__name__)
 setup_logger()
 
 
 def _get_start_lookback_date(end_date: str, mode_conf: dict) -> tuple[str, str]:
-
     _date_obj = datetime.strptime(end_date, "%Y-%m-%d")
     start_date = _date_obj - timedelta(
         days=mode_conf["scans_conf"]["months_lookback"] * 30
@@ -87,7 +84,6 @@ def _run_swing_scan(
     end_date: str,
     adr_cutoff: float,
 ):
-
     start_date = datetime.strptime(start_date, "%Y-%m-%d")
     end_date = datetime.strptime(end_date, "%Y-%m-%d")
 
@@ -146,7 +142,6 @@ def _run_filter_scan(
     end_date: str,
     adr_cutoff: float,
 ):
-
     end_date = datetime.strptime(args.end_date, "%Y-%m-%d")
 
     scan_symbol_list = (

@@ -1,10 +1,9 @@
 import logging
+from typing import Literal
 
 import pandas as pd
 import polars as pl
 from kiteconnect import KiteConnect
-from typing import Literal
-
 
 logger = logging.getLogger(__name__)
 

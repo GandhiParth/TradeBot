@@ -1,9 +1,8 @@
-from abc import ABC, abstractmethod
-from datetime import date
-
-from src.config.market import Market
-from src.config.exchange import Exchange
 import logging
+from abc import ABC, abstractmethod
+
+from src.config.exchange import Exchange
+from src.config.market import Market
 from src.config.storage_layout import StorageLayout
 from src.utils import timeit
 

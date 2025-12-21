@@ -1,5 +1,5 @@
-from src.config.market import Market
 from src.config.exchange import Exchange
+from src.config.market import Market
 
 MARKET_EXCHANGE = {
     Market.INDIA_EQUITIES: {

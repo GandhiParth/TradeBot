@@ -1,8 +1,6 @@
 import logging
 import time
 
-import pandas as pd
-import polars as pl
 from kiteconnect import KiteConnect
 from pyotp import TOTP
 from selenium import webdriver
@@ -11,7 +9,7 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.firefox.options import Options as FirefoxOptions
 
 from src.brokers.kite.exceptions import KiteError
-from src.utils import get_today, read_ini_file
+from src.utils import read_ini_file
 
 logger = logging.getLogger(__name__)
 

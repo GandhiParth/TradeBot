@@ -1,15 +1,15 @@
 from pathlib import Path
-from src.config.market import Market
+
 from src.config.exchange import Exchange
+from src.config.market import Market
 
 
 class KiteConfig:
     NAME = "KITE"
 
-    SUPPORTED_MARKETS = {Market.INDIA_EQUITIES}
-    SUPPROTED_EXCHANGES = {Exchange.NSE}
+    SUPPORTED_MARKETS = {Market.INDIA_EQUITIES: {Exchange.NSE}}
 
-    CREDENTIALS_PATH = Path("/home/parthgandhi/conf/credentials/kite.ini")
+    CREDENTIALS_PATH = Path("/home/parthgandhi/.conf/credentials/kite.ini")
 
     LOOKBACK_DAYS_LIMIT = None
 
