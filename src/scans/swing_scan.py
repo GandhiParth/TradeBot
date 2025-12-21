@@ -22,7 +22,7 @@ def add_basic_indicators(data: pl.LazyFrame) -> pl.LazyFrame:
                 .over(partition_by="symbol", order_by="timestamp", descending=False)
                 .round(2)
                 .alias(f"close_sma_{n}")
-                for n in [50]
+                for n in [50, 200]
             ]
             # Close EMA Experssion
             + [
@@ -132,7 +132,6 @@ def add_basic_indicators(data: pl.LazyFrame) -> pl.LazyFrame:
 
 
 def prep_scan_data(
-    ins_file_path: str,
     conn: str,
     kite_conf: dict,
     lookback_min_gains_dict: dict,
@@ -140,16 +139,6 @@ def prep_scan_data(
     """
     Fetch all data from DB and prepare it for scan
     """
-    ins_df = (
-        pl.scan_parquet(ins_file_path)
-        .with_columns(
-            pl.when(pl.col("segment") == "INDICES")
-            .then(False)
-            .otherwise(True)
-            .alias("eq_flag")
-        )
-        .select("symbol", "eq_flag")
-    )
 
     query = f"""
             select *
@@ -189,7 +178,6 @@ def prep_scan_data(
             .otherwise(True)
             .alias("all_data_flag")
         )
-        .join(ins_df, on="symbol", how="left")
     )
 
     return res
@@ -207,8 +195,7 @@ def basic_scan(data: pl.LazyFrame, conf: dict) -> pl.LazyFrame:
         ],
     )
     res = data.filter(
-        (pl.col("eq_flag") == True)
-        & (pl.col("all_data_flag") == True)
+        (pl.col("all_data_flag") == True)
         & (pl.col("close_ema_9") >= pl.col("close_sma_50"))
         & (pl.col("close_ema_21") >= pl.col("close_sma_50"))
         & (pl.col("volume_sma_20") >= conf["volume_threshold"])
