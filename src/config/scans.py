@@ -23,7 +23,7 @@ _VCP_FILTER_CONF = {
 scans_conf = {
     Market.INDIA_EQUITIES: {
         "months_lookback": 3,
-        "data_lookback_days": 365,
+        "data_lookback_days": 500,
         "volume_threshold": _VOLUME_THRESHOLD,
         "lookback_min_return_pct": _LOOKBACK_DAYS_TO_MIN_RETURN_PCT,
     }
