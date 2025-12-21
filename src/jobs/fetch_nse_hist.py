@@ -5,7 +5,7 @@ from pathlib import Path
 
 import polars as pl
 
-from src.brokers.kite.kite import KiteHistorical, KiteLogin, fetch_kite_instruments
+from src.brokers.kite.login import KiteHistorical, KiteLogin, fetch_kite_instruments
 from src.conf import kite_conf, runs_conn, runs_path, scans_conf
 from src.utils import setup_logger, timeit
 
