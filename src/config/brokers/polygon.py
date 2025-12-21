@@ -15,5 +15,5 @@ class PolygonConfig:
 
     API_RATE_LIMIT_SECONDS = {
         "calls": 5,
-        "period": 1,
+        "period": 60,
     }

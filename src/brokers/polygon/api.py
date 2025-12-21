@@ -5,10 +5,12 @@ import polars as pl
 from massive import RESTClient
 from ratelimit import limits, sleep_and_retry
 
+from src.config.brokers.polygon import PolygonConfig
+
 logger = logging.getLogger(__name__)
 
-CALLS = 5
-PERIOD = 60
+CALLS = PolygonConfig.API_RATE_LIMIT_SECONDS["calls"]
+PERIOD = PolygonConfig.API_RATE_LIMIT_SECONDS["period"]
 
 
 def get_ticker_types(client: RESTClient, asset_class: str, locale: str) -> pl.DataFrame:
