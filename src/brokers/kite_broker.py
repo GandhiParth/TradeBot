@@ -31,7 +31,6 @@ class Kite(BaseBroker):
             )
             .filter(pl.col("suffix").is_in(["RR", "IV", "EQ"]))
             .collect()
-            .sample(10)
         )
 
         self.logger.info(f"Data will be fecthed for {df.shape[0]} symbols")

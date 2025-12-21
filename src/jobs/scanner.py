@@ -8,8 +8,15 @@ from src.config.storage_layout import StorageLayout
 import shutil
 from src.scans.swing_scan import basic_scan, find_stocks, high_adr_scan, prep_scan_data
 from pathlib import Path
-from src.config.scans import scans_conf
+from src.config.scans import scans_conf, filter_conf
 import polars as pl
+from src.scans.filter_scan import (
+    adr_filter,
+    basic_filter,
+    pullback_filter,
+    sma_200_filter,
+    vcp_filter,
+)
 
 logger = logging.getLogger(__name__)
 setup_logger()
@@ -78,6 +85,7 @@ def _run_swing_scan(
     scans_conf: dict,
     start_date: str,
     end_date: str,
+    adr_cutoff: float,
 ):
 
     start_date = datetime.strptime(start_date, "%Y-%m-%d")
@@ -128,6 +136,78 @@ def _run_swing_scan(
     )
 
 
+def _run_filter_scan(
+    db_path: Path,
+    scans_path: Path,
+    filters_path: Path,
+    table_id: str,
+    scans_conf: dict,
+    filters_conf: dict,
+    end_date: str,
+    adr_cutoff: float,
+):
+
+    end_date = datetime.strptime(args.end_date, "%Y-%m-%d")
+
+    scan_symbol_list = (
+        pl.scan_csv(scans_path / "basic_stocks.csv")
+        .collect()
+        .get_column("symbol")
+        .to_list()
+    )
+    logger.info(f"Stocks in the Scan List {len(scan_symbol_list)}")
+
+    query = f"""
+    select * 
+    from {table_id}
+    where symbol in {tuple(scan_symbol_list)}
+    """
+
+    data = pl.read_database_uri(query=query, uri=f"sqlite:///{db_path}")
+    basic_stock_list = basic_filter(
+        data=data, symbol_list=scan_symbol_list, scan_date=end_date, conf=scans_conf
+    )
+    data = data.filter(pl.col("symbol").is_in(basic_stock_list))
+
+    # Basic filter
+    basic_filter_df = data.filter(pl.col("timestamp") == end_date)
+    basic_filter_df.write_csv(filters_path / "basic_filter.csv")
+    logger.info(f"# Stocks in Basic Filter: {basic_filter_df.shape[0]}")
+
+    # 200 SMA filter
+    basic_filter_stocks = basic_filter_df.get_column("symbol").to_list()
+    data = data.filter(pl.col("symbol").is_in(basic_filter_stocks))
+    sma_200_filter_df = sma_200_filter(data=data, end_date=end_date)
+    sma_200_filter_df.write_csv(filters_path / "sma_200_filter.csv")
+    logger.info(f"# Stocks in SMA 200 Filter: {sma_200_filter_df.shape[0]}")
+
+    # ADR filter
+    sma_200_filter_stocks = sma_200_filter_df.get_column("symbol").to_list()
+    data = data.filter(pl.col("symbol").is_in(sma_200_filter_stocks))
+    adr_filter_df = adr_filter(data=data, adr_cutoff=adr_cutoff, end_date=end_date)
+    adr_filter_df.write_csv(filters_path / "adr_filter.csv")
+    logger.info(f"# Stocks in ADR Filter: {adr_filter_df.shape[0]}")
+
+    # Final ADR Filter
+    adr_filter_stocks = adr_filter_df.get_column("symbol").to_list()
+    data = data.filter(pl.col("symbol").is_in(adr_filter_stocks))
+
+    # Pullback filter
+    pullback_df = pullback_filter(
+        data=data, end_date=end_date, conf=filters_conf["pullback"]
+    )
+    pullback_df.select(pl.exclude("flag_dates")).write_csv(
+        filters_path / "pullback.csv"
+    )
+    pullback_df.write_parquet(filters_path / "pullback.parquet")
+    logger.info(f"# Stocks in PullBack: {pullback_df.shape[0]}")
+
+    # VCP filter
+    vcp_df = vcp_filter(data=data, end_date=end_date, conf=filters_conf["vcp"])
+    vcp_df.write_csv(filters_path / "vcp.csv")
+    logger.info(f"# Stocks in VCP: {vcp_df.shape[0]}")
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Run Swing Scans")
     parser.add_argument("--fetch", action="store_true", help="Fetch Data")
@@ -158,7 +238,7 @@ if __name__ == "__main__":
 
     ## Fetch Data
     if fetch_flag:
-
+        logger.info("Fetching Data....")
         broker = mode_conf["broker"]
         broker = broker(
             market=mode_conf["market"],
@@ -170,6 +250,8 @@ if __name__ == "__main__":
             tables=EXCHG_TABLES,
         )()
 
+    ## Run Swing Scan
+    logger.info("######### Running Swing Scan #########")
     data_table_id = EXCHG_TABLES[mode_conf["exchange"]]["ohlcv_daily"]
     logger.info(db_path)
     _run_swing_scan(
@@ -179,4 +261,18 @@ if __name__ == "__main__":
         scans_conf=scans_conf[mode_conf["market"]],
         start_date=start_date,
         end_date=end_date,
+        adr_cutoff=adr_cutoff,
+    )
+
+    ## Run Filter Scan
+    logger.info("######### Running Filter Scan #########")
+    _run_filter_scan(
+        db_path=db_path,
+        scans_path=scans_path,
+        filters_path=filters_path,
+        table_id=data_table_id,
+        scans_conf=scans_conf[mode_conf["market"]],
+        filters_conf=filter_conf[mode_conf["market"]],
+        end_date=end_date,
+        adr_cutoff=adr_cutoff,
     )

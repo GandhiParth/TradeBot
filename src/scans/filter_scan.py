@@ -67,7 +67,6 @@ def adr_filter(
 
 def pullback_filter(
     data: pl.LazyFrame,
-    adr_cutoff: float,
     end_date: datetime,
     conf: dict,
 ) -> pl.DataFrame:
