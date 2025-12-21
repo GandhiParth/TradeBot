@@ -10,7 +10,7 @@ from src.brokers.kite.login import KiteLogin
 
 
 class Kite(BaseBroker):
-    def login(self) -> KiteConnect:
+    def login(self) -> None:
         self._client = KiteLogin(credentials_path=self._config.CREDENTIALS_PATH)()
 
     def fetch_instruments(self):
