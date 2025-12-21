@@ -5,6 +5,7 @@ from src.config.market import Market
 from src.config.exchange import Exchange
 import logging
 from src.config.storage_layout import StorageLayout
+from src.utils import timeit
 
 
 class BaseBroker(ABC):
@@ -23,8 +24,8 @@ class BaseBroker(ABC):
         config: object,
         tables: dict,
     ):
-        self._market = market
-        self._exchange = exchange
+        self._market = market.value
+        self._exchange = exchange.value
         self._start_date = start_date
         self._end_date = end_date
         self._frequency = frequency
@@ -45,6 +46,7 @@ class BaseBroker(ABC):
             market=self._market, exchange=self._exchange
         )
 
+    @timeit
     @abstractmethod
     def login(self) -> object:
         """
@@ -53,6 +55,7 @@ class BaseBroker(ABC):
         """
         pass
 
+    @timeit
     @abstractmethod
     def fetch_instruments(self) -> None:
         """
@@ -63,6 +66,7 @@ class BaseBroker(ABC):
         """
         pass
 
+    @timeit
     @abstractmethod
     def fetch_ohlcv(
         self,

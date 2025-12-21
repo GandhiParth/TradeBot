@@ -36,8 +36,8 @@ def _get_start_lookback_date(end_date: str, mode_conf: dict) -> tuple[str, str]:
 
 
 def _make_dir(end_date: str, market: str, exchange: str, fetch_flag: bool):
-    data_path = StorageLayout.data_dir(market=market, exchange=market)
-    db_path = data_path = StorageLayout.db_path(market=market, exchange=market)
+    data_path = StorageLayout.data_dir(market=market, exchange=exchange)
+    db_path = StorageLayout.db_path(market=market, exchange=exchange)
 
     if fetch_flag:
         if data_path.exists() and data_path.is_dir():
@@ -170,7 +170,8 @@ if __name__ == "__main__":
             tables=EXCHG_TABLES,
         )()
 
-    data_table_id = EXCHG_TABLES[mode_conf["market"]]["ohlcv_daily"]
+    data_table_id = EXCHG_TABLES[mode_conf["exchange"]]["ohlcv_daily"]
+    logger.info(db_path)
     _run_swing_scan(
         db_path=db_path,
         scans_path=scans_path,

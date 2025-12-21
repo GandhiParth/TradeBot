@@ -181,7 +181,7 @@ class KiteHistorical:
                             if_table_exists="append",
                         )
 
-                        self.logger.info(
+                        self.logger.debug(
                             f"""Data Inserted Successfully for {param_map[future]}"""
                         )
                     else:
@@ -294,11 +294,10 @@ class KiteHistorical:
                 continuous_flag=continuous_flag,
             )
 
-            self.logger.info(
-                f"""Failed to get for {len(param_map)} date ranges for {symbol}"""
-            )
-
             if len(param_map) > 0:
+                self.logger.info(
+                    f"""Failed to get for {len(param_map)} date ranges for {symbol}"""
+                )
                 failed_df = pl.DataFrame(list(param_map.values()))
                 failed_df.write_database(
                     table_name=failed_table_name,

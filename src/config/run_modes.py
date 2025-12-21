@@ -8,8 +8,8 @@ from src.config.scans import scans_conf, filter_conf
 RUN_MODES = {
     "1": {
         "broker": Kite,
-        "market": Market.INDIA_EQUITIES.value,
-        "exchange": Exchange.NSE.value,
+        "market": Market.INDIA_EQUITIES,
+        "exchange": Exchange.NSE,
         "config": KiteConfig,
         "scans_conf": scans_conf[Market.INDIA_EQUITIES],
         "filter_conf": filter_conf[Market.INDIA_EQUITIES],

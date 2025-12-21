@@ -21,7 +21,7 @@ class Kite(BaseBroker):
     def fetch_ohlcv(self):
         df = (
             pl.scan_parquet(self._download_path / "instruments.parquet")
-            .remove(pl.col(pl.col("segment") == "INDICES"))
+            .remove(pl.col("segment") == "INDICES")
             .with_columns(
                 pl.col("symbol")
                 .str.split(by="-")
@@ -31,7 +31,7 @@ class Kite(BaseBroker):
             )
             .filter(pl.col("suffix").is_in(["RR", "IV", "EQ"]))
             .collect()
-            .sample(100)
+            .sample(10)
         )
 
         self.logger.info(f"Data will be fecthed for {df.shape[0]} symbols")
@@ -52,6 +52,8 @@ class Kite(BaseBroker):
             "%Y-%m-%d 00:00:00"
         )
 
+        self.logger.info("Starting Data Fetching...")
+
         kite_hist.get_historical_data(
             start_date=start_date,
             end_date=end_date,
@@ -62,6 +64,8 @@ class Kite(BaseBroker):
             failed_table_name=self._tables_name["ohlcv_failed"],
             insert_table_name=self._tables_name["ohlcv_daily"],
         )
+
+        self.logger.info(self._db_path)
 
     def __call__(self):
         self.login()
