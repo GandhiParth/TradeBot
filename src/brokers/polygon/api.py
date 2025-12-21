@@ -99,7 +99,6 @@ def get_grouped_daily_aggs(
     date: str,
     **kwargs,
 ):
-
     grouped = client.get_grouped_daily_aggs(date=date, **kwargs)
 
     if grouped == []:
@@ -131,7 +130,6 @@ def get_grouped_daily_aggs(
 def get_date_range_grouped_daily_aggs(
     client: RESTClient, start_date: str, end_date: str, **kwargs
 ):
-
     df_list = []
     date_ranges_list = date_range(
         start_date=start_date, end_date=end_date, skip_weekends=True
