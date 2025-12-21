@@ -11,8 +11,8 @@ class StorageLayout:
     DATA = ROOT / "data"
 
     @staticmethod
-    def runs_dir(run_date: str) -> Path:
-        out = StorageLayout.RUNS / run_date
+    def runs_dir(run_date: str, market: str, exchange: str) -> Path:
+        out = StorageLayout.RUNS / run_date / market / exchange
         logger.debug(f"Returning path: {out}")
         return out
 
@@ -23,14 +23,20 @@ class StorageLayout:
         return out
 
     @staticmethod
-    def scans_dir(market: str, run_date: str) -> Path:
-        out = StorageLayout.runs_dir(run_date=run_date) / market / "scans"
+    def scans_dir(run_date: str, market: str, exchange: str) -> Path:
+        out = (
+            StorageLayout.runs_dir(run_date=run_date, market=market, exchange=exchange)
+            / "scans"
+        )
         logger.debug(f"Returning path: {out}")
         return out
 
     @staticmethod
-    def filters_dir(market: str, run_date: str) -> Path:
-        out = StorageLayout.runs_dir(run_date=run_date) / market / "filters"
+    def filters_dir(run_date: str, market: str, exchange: str) -> Path:
+        out = (
+            StorageLayout.runs_dir(run_date=run_date, market=market, exchange=exchange)
+            / "filters"
+        )
         logger.debug(f"Returning path: {out}")
         return out
 

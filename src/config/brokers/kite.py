@@ -4,12 +4,14 @@ from src.config.exchange import Exchange
 
 
 class KiteConfig:
-    NAME = "kite"
+    NAME = "KITE"
 
     SUPPORTED_MARKETS = {Market.INDIA_EQUITIES}
     SUPPROTED_EXCHANGES = {Exchange.NSE}
 
     CREDENTIALS_PATH = Path("/home/parthgandhi/conf/credentials/kite.ini")
+
+    LOOKBACK_DAYS_LIMIT = None
 
     HISTORICAL_DATA_LIMIT_DAYS = {
         "minute": 30,
