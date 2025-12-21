@@ -1,10 +1,11 @@
+import time
+
 import polars as pl
 
 from src.brokers.base import BaseBroker
-from src.brokers.polygon.login import polygon_login
-from src.brokers.polygon.instruments import fetch_instruments
 from src.brokers.polygon.historical import polygon_historical
-import time
+from src.brokers.polygon.instruments import fetch_instruments
+from src.brokers.polygon.login import polygon_login
 
 
 class Polygon(BaseBroker):

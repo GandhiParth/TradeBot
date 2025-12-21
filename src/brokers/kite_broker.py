@@ -1,7 +1,6 @@
 from datetime import datetime
 
 import polars as pl
-from kiteconnect import KiteConnect
 
 from src.brokers.base import BaseBroker
 from src.brokers.kite.historical import KiteHistorical
