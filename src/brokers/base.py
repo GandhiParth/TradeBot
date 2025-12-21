@@ -22,7 +22,7 @@ class BaseBroker(ABC):
         end_date: str,
         frequency: str,
         config: object,
-        tables=EXCHG_TABLES,
+        tables: dict,
     ):
         self._market = market
         self._exchange = exchange
