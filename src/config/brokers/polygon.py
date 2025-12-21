@@ -1,0 +1,17 @@
+from pathlib import Path
+from src.config.markets import Market
+from src.config.exchange import Exchange
+
+
+class PolygonConfig:
+    NAME = "Polygon"
+
+    SUPPORTED_MARKETS = {Market.US_EQUITIES}
+    SUPPROTED_EXCHANGES = {Exchange.NYSE, Exchange.NASDAQ}
+
+    CREDENTIALS_PATH = Path("/home/parthgandhi/conf/credentials/polygon.ini")
+
+    API_RATE_LIMIT_SECONDS = {
+        "calls": 5,
+        "period": 1,
+    }
