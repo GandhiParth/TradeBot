@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from datetime import date
 
-from src.config.markets import Market
+from src.config.market import Market
 from src.config.exchange import Exchange
 from src.config.exchange_tables import EXCHG_TABLES
 import logging

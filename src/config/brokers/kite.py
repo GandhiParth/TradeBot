@@ -1,5 +1,5 @@
 from pathlib import Path
-from src.config.markets import Market
+from src.config.market import Market
 from src.config.exchange import Exchange
 
 
