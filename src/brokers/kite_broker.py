@@ -64,8 +64,6 @@ class Kite(BaseBroker):
             insert_table_name=self._tables_name["ohlcv_daily"],
         )
 
-        self.logger.info(self._db_path)
-
     def __call__(self):
         self.login()
         self.fetch_instruments()
