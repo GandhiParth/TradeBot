@@ -263,7 +263,6 @@ def pullback_reversal_filter(
     end_date: datetime,
     conf: dict,
 ) -> pl.DataFrame:
-
     df = add_basic_indicators(data)
 
     res = (
@@ -282,7 +281,7 @@ def pullback_reversal_filter(
             # Falling streak BEFORE reversal
             pl.sum_horizontal(
                 [
-                    pl.col(f"mid_{i+1}") >= pl.col(f"mid_{i}")
+                    pl.col(f"mid_{i + 1}") >= pl.col(f"mid_{i}")
                     for i in range(1, conf["pullback_days"] + 1)
                 ]
             ).alias("falling_streak")
@@ -296,7 +295,7 @@ def pullback_reversal_filter(
         )
         .with_columns(
             # Rising confirmation today
-            ((pl.col("low") > pl.col("low").shift(1))).alias("rising_today")
+            (pl.col("low") > pl.col("low").shift(1)).alias("rising_today")
         )
         .filter(
             # (pl.col("falling_streak") >= conf["min_pullback_days"])
