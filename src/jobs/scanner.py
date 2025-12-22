@@ -10,10 +10,15 @@ from src.config.exchange_tables import EXCHG_TABLES
 from src.config.run_modes import RUN_MODES
 from src.config.scans import filter_conf, scans_conf
 from src.config.storage_layout import StorageLayout
-from src.scans.filter_scan import (adr_filter, basic_filter, pullback_filter,
-                                   sma_200_filter, vcp_filter)
-from src.scans.swing_scan import (basic_scan, find_stocks, high_adr_scan,
-                                  prep_scan_data)
+from src.scans.filter_scan import (
+    adr_filter,
+    basic_filter,
+    pullback_filter,
+    pullback_reversal_filter,
+    sma_200_filter,
+    vcp_filter,
+)
+from src.scans.swing_scan import basic_scan, find_stocks, high_adr_scan, prep_scan_data
 from src.utils import setup_logger
 
 logger = logging.getLogger(__name__)
@@ -108,6 +113,7 @@ def _run_swing_scan(
     )
     basic_scan_df.collect().write_csv(scans_path / "basic_scan.csv")
     basic_stocks_df.write_csv(scans_path / "basic_stocks.csv")
+    logger.info(f"SCan path: {scans_path}")
     logger.info(
         f"# Stocks in BASIC SCAN: {basic_stocks_df.select(pl.col('symbol').n_unique()).item(0, 0)}"
     )
@@ -201,6 +207,13 @@ def _run_filter_scan(
     vcp_df = vcp_filter(data=data, end_date=end_date, conf=filters_conf["vcp"])
     vcp_df.write_csv(filters_path / "vcp.csv")
     logger.info(f"# Stocks in VCP: {vcp_df.shape[0]}")
+
+    ## Pullback Reversal
+    reversal_df = pullback_reversal_filter(
+        data=data, end_date=end_date, conf=filters_conf["pullback"]
+    )
+    reversal_df.write_csv(filters_path / "reversal.csv")
+    logger.info(f"# Stocks in Pullback reversal: {reversal_df.shape[0]}")
 
 
 if __name__ == "__main__":

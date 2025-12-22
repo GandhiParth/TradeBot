@@ -18,6 +18,7 @@ _US_LOOKBACK_DAYS_TO_MIN_RETURN_PCT = {
 
 _MID_DOWN_COUNT_THRESHOLD = 2
 _PULLBACK_NEAR_PCT = 2  # in %
+_PULLBACK_DAYS = 10
 
 _VCP_FILTER_CONF = {
     "timeframe": 252,
@@ -47,6 +48,7 @@ filter_conf = {
         "pullback": {
             "pullback_near_pct": _PULLBACK_NEAR_PCT,
             "mid_down_strak": _MID_DOWN_COUNT_THRESHOLD,
+            "pullback_days": _PULLBACK_DAYS,
         },
         "vcp": {**_VCP_FILTER_CONF},
     },
