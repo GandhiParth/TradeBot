@@ -87,7 +87,7 @@ def pullback_filter(
         "mid_down_streak"
     )
 
-    # _rvol_cutoff = 150
+    _rvol_cutoff = 110
 
     df = add_basic_indicators(data=data)
     res = (
@@ -118,7 +118,7 @@ def pullback_filter(
                 | (pl.col("near_close_ema_21") == True)
                 | (pl.col("near_close_sma_50") == True)
                 # & (pl.col("adr_pct_20") >= adr_cutoff)
-                # & (pl.col("rvol_pct") < _rvol_cutoff)
+                & (pl.col("rvol_pct") <= _rvol_cutoff)
             )
         )
         .with_columns(
