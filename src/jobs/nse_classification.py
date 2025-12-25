@@ -1,14 +1,12 @@
 import argparse
 import logging
+import shutil
 
-
+from src.config.exchange import Exchange
+from src.config.market import Market
+from src.config.run_modes import RUN_MODES
 from src.config.storage_layout import StorageLayout
 from src.utils import setup_logger
-from src.config.market import Market
-from src.config.exchange import Exchange
-
-from src.config.run_modes import RUN_MODES
-import shutil
 
 setup_logger()
 logger = logging.getLogger(__name__)

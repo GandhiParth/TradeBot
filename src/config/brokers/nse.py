@@ -1,7 +1,6 @@
-from src.config.storage_layout import StorageLayout
-
-from src.config.market import Market
 from src.config.exchange import Exchange
+from src.config.market import Market
+from src.config.storage_layout import StorageLayout
 
 
 class NSEConfig:

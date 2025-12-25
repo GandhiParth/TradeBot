@@ -1,20 +1,18 @@
-from src.brokers.nse.industry import (
-    create_classification_table,
-    fetch_nse_industry_classification,
-    prepare_symbol_list,
-)
 import logging
+
+from src.brokers.nse.industry import (create_classification_table,
+                                      fetch_nse_industry_classification,
+                                      prepare_symbol_list)
+from src.config.brokers.nse import NSEConfig
 from src.config.exchange import Exchange
 from src.config.market import Market
 from src.config.storage_layout import StorageLayout
-from src.config.brokers.nse import NSEConfig
 
 
 class NSE:
     def __init__(
         self, market: Market, exchange: Exchange, end_date: str, config: NSEConfig
     ):
-
         self._market = market
         self._exchange = exchange
         self._end_date = end_date
