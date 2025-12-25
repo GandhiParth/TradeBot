@@ -10,11 +10,15 @@ from src.config.exchange_tables import EXCHG_TABLES
 from src.config.run_modes import RUN_MODES
 from src.config.scans import filter_conf, scans_conf
 from src.config.storage_layout import StorageLayout
-from src.scans.filter_scan import (adr_filter, basic_filter, pullback_filter,
-                                   pullback_reversal_filter, sma_200_filter,
-                                   vcp_filter)
-from src.scans.swing_scan import (basic_scan, find_stocks, high_adr_scan,
-                                  prep_scan_data)
+from src.scans.filter_scan import (
+    adr_filter,
+    basic_filter,
+    pullback_filter,
+    pullback_reversal_filter,
+    sma_200_filter,
+    vcp_filter,
+)
+from src.scans.swing_scan import basic_scan, find_stocks, high_adr_scan, prep_scan_data
 from src.utils import setup_logger
 
 logger = logging.getLogger(__name__)
@@ -218,7 +222,7 @@ if __name__ == "__main__":
     parser.add_argument("--run_mode", required=True, help="Run Mode")
     parser.add_argument("--end_date", required=True, help="End date YYYY-MM-DD")
     parser.add_argument("--adr_cutoff", default=3.5, help="ADR Cutoff")
-    parser.add_argument("--freq", default="day", help="ADR Cutoff")
+    parser.add_argument("--freq", default="day", help="Frequency of data to be fetched")
 
     args = parser.parse_args()
     fetch_flag = args.fetch
@@ -257,7 +261,6 @@ if __name__ == "__main__":
     ## Run Swing Scan
     logger.info("######### Running Swing Scan #########")
     data_table_id = EXCHG_TABLES[mode_conf["exchange"]]["ohlcv_daily"]
-    logger.info(db_path)
     _run_swing_scan(
         db_path=db_path,
         scans_path=scans_path,
