@@ -68,15 +68,19 @@ def prepare_symbol_list(
 
     ins_df = (
         pl.scan_parquet(ins_path)
+        .with_columns(pl.col("symbol").str.split(by="-").alias("symbol_split"))
         .with_columns(
-            pl.col("symbol")
-            .str.split(by="-")
+            pl.col("symbol_split")
             .list.get(index=1, null_on_oob=True)
             .fill_null("EQ")
-            .alias("suffix")
+            .alias("filter_suffix"),
+            pl.col("symbol_split")
+            .list.get(index=0, null_on_oob=True)
+            .alias("search_symbol"),
         )
-        .filter(pl.col("suffix").is_in(["RR", "IV", "EQ"]))
+        .filter(pl.col("filter_suffix").is_in(["RR", "IV", "EQ"]))
         .remove(pl.col("segment") == "INDICES")
+        .filter(pl.col("search_symbol").is_not_null())
         .select("search_symbol")
         .collect()
     )

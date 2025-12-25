@@ -35,7 +35,7 @@ if __name__ == "__main__":
         "--fetch", action="store_true", help="Delete Eveerything & Fecth"
     )
     parser.add_argument("--end_date", required=True, help="End date YYYY-MM-DD")
-    parser.add_argument("--run_mode", help="Run Mode", default=2)
+    parser.add_argument("--run_mode", help="Run Mode", default="2")
     args = parser.parse_args()
 
     fetch_date = args.end_date
@@ -53,7 +53,7 @@ if __name__ == "__main__":
         market=Market.INDIA_EQUITIES, exchange=Exchange.NSE
     )
 
-    instruments_path = instruments_path / "instruments.parquet"
+    instruments_path = mode_conf["config"].INSTRUMENTS_FILE_PATH
 
     logger.info(f"INSTRUMENTS PATH: {instruments_path}")
 
@@ -62,6 +62,7 @@ if __name__ == "__main__":
         market=mode_conf["market"],
         exchange=mode_conf["exchange"],
         end_date=args.end_date,
+        config=mode_conf["config"],
     )(instruments_path=instruments_path)
 
     logger.info("######### Completed NSE Industry Fetching #########")
