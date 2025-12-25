@@ -10,6 +10,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 from sqlalchemy import create_engine, text
 
+from src.config.brokers.nse import NSEConfig
 from src.utils import setup_logger
 
 setup_logger()
@@ -17,9 +18,9 @@ setup_logger()
 logger = logging.getLogger(__name__)
 
 
-def create_classification_table(conn: str, conf: dict):
+def create_classification_table(conn: str, conf: NSEConfig):
     engine = create_engine(conn)
-    table_id = conf["classification_table_id"]
+    table_id = conf.CLASSIFICATION_TABLE_ID
 
     with engine.connect() as conn:
         # Enable foreign keys (SQLite)
@@ -50,11 +51,11 @@ def create_classification_table(conn: str, conf: dict):
 
 
 def prepare_symbol_list(
-    ins_path: str, fetch_date: str, conf: dict, conn: str
+    ins_path: str, fetch_date: str, conf: NSEConfig, conn: str
 ) -> list[str]:
     """ """
 
-    table_id = conf["classification_table_id"]
+    table_id = conf.CLASSIFICATION_TABLE_ID
     query = f"""
         select symbol
         from {table_id}
@@ -97,7 +98,7 @@ def prepare_symbol_list(
 def fetch_nse_industry_classification(
     symbol_list: list[str],
     fetch_date: str,
-    conf: dict,
+    conf: NSEConfig,
     conn: str,
 ):
     count = 0
@@ -107,7 +108,7 @@ def fetch_nse_industry_classification(
     options = FirefoxOptions()
     options.add_argument("--headless")
     driver = webdriver.Firefox(options=options)
-    driver.get(conf["nse_url"])
+    driver.get(conf.URL)
     driver.implicitly_wait(15)
     driver.maximize_window()
 
@@ -216,7 +217,7 @@ def fetch_nse_industry_classification(
             )
 
             df.write_database(
-                table_name=conf["classification_table_id"],
+                table_name=conf.CLASSIFICATION_TABLE_ID,
                 connection=conn,
                 if_table_exists="append",
             )
@@ -235,7 +236,7 @@ def fetch_nse_industry_classification(
             df = pl.DataFrame([data])
 
             df.write_database(
-                table_name=conf["failed_classification_table_id"],
+                table_name=conf.FAILED_CLASSIFICATION_TABLE_ID,
                 connection=conn,
                 if_table_exists="append",
             )
@@ -246,7 +247,7 @@ def fetch_nse_industry_classification(
             options = FirefoxOptions()
             options.add_argument("--headless")
             driver = webdriver.Firefox(options=options)
-            driver.get(conf["nse_url"])
+            driver.get(conf.URL)
             driver.implicitly_wait(15)
             driver.maximize_window()
 
