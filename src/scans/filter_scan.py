@@ -31,7 +31,7 @@ def basic_filter(
             .filter(
                 (pl.col("close_ema_9") >= pl.col("close_sma_50"))
                 & (pl.col("close_ema_21") >= pl.col("close_sma_50"))
-                & (pl.col("volume_sma_20") >= conf["volume_threshold"])
+                # & (pl.col("volume_sma_20") >= conf["volume_threshold"])
                 & (pl.col("timestamp") == scan_date)
                 & (pl.col("symbol").is_in(symbol_list))
             )
@@ -67,12 +67,12 @@ def adr_filter(
 
 def pullback_filter(
     data: pl.LazyFrame,
-    adr_cutoff: float,
     end_date: datetime,
     conf: dict,
 ) -> pl.DataFrame:
     comparisons = [
-        (pl.col(f"mid_prev_{i}")) <= pl.col(f"mid_prev_{i + 1}") for i in range(0, 10)
+        (pl.col(f"mid_prev_{i}")) <= pl.col(f"mid_prev_{i + 1}")
+        for i in range(0, conf["pullback_days"])
     ]
 
     cumulative_conditions = []
@@ -88,7 +88,7 @@ def pullback_filter(
         "mid_down_streak"
     )
 
-    # _rvol_cutoff = 150
+    _rvol_cutoff = 110
 
     df = add_basic_indicators(data=data)
     res = (
@@ -102,7 +102,7 @@ def pullback_filter(
                 .shift(i)
                 .over(partition_by="symbol", order_by="timestamp", descending=False)
                 .alias(f"mid_prev_{i}")
-                for i in range(1, 11)
+                for i in range(1, conf["pullback_days"] + 1)
             ]
             + [
                 (
@@ -119,7 +119,7 @@ def pullback_filter(
                 | (pl.col("near_close_ema_21") == True)
                 | (pl.col("near_close_sma_50") == True)
                 # & (pl.col("adr_pct_20") >= adr_cutoff)
-                # & (pl.col("rvol_pct") < _rvol_cutoff)
+                & (pl.col("rvol_pct") <= _rvol_cutoff)
             )
         )
         .with_columns(
@@ -252,6 +252,61 @@ def sma_200_filter(data: pl.DataFrame, end_date: datetime) -> pl.DataFrame:
         )
         .sort(["adr_pct_20", "rvol_pct"], descending=[True, False])
         .with_row_index(name="rank", offset=1)
+        .collect()
+    )
+
+    return res
+
+
+def pullback_reversal_filter(
+    data: pl.LazyFrame,
+    end_date: datetime,
+    conf: dict,
+) -> pl.DataFrame:
+    df = add_basic_indicators(data)
+
+    res = (
+        df.lazy()
+        .with_columns(pl.mean_horizontal(("open", "close")).round(2).alias("mid"))
+        .with_columns(
+            [
+                pl.col("mid")
+                .shift(i)
+                .over("symbol", order_by="timestamp", descending=False)
+                .alias(f"mid_{i}")
+                for i in range(1, conf["pullback_days"] + 2)
+            ]
+        )
+        .with_columns(
+            # Falling streak BEFORE reversal
+            pl.sum_horizontal(
+                [
+                    pl.col(f"mid_{i + 1}") >= pl.col(f"mid_{i}")
+                    for i in range(1, conf["pullback_days"] + 1)
+                ]
+            ).alias("falling_streak")
+        )
+        .with_columns(
+            # Pivot low at t-1
+            (
+                (pl.col("mid_2") >= pl.col("mid_1"))
+                & (pl.col("mid_1") <= pl.col("mid"))
+            ).alias("pivot_low")
+        )
+        .with_columns(
+            # Rising confirmation today
+            (pl.col("low") > pl.col("low").shift(1)).alias("rising_today")
+        )
+        .filter(
+            # (pl.col("falling_streak") >= conf["min_pullback_days"])
+            # &
+            (pl.col("pivot_low"))
+            # & (pl.col("rising_today"))
+            & (pl.col("timestamp") == end_date)
+        )
+        .sort(["adr_pct_20", "rvol_pct"], descending=[True, False])
+        .with_row_index("rank", offset=1)
+        .select(~cs.starts_with("mid_"))
         .collect()
     )
 

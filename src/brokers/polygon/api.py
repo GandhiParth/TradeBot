@@ -1,13 +1,16 @@
-from massive import RESTClient
-from ratelimit import sleep_and_retry, limits
-import polars as pl
-from datetime import datetime, timezone, timedelta
 import logging
+from datetime import datetime, timedelta, timezone
+
+import polars as pl
+from massive import RESTClient
+from ratelimit import limits, sleep_and_retry
+
+from src.config.brokers.polygon import PolygonConfig
 
 logger = logging.getLogger(__name__)
 
-CALLS = 5
-PERIOD = 60
+CALLS = PolygonConfig.API_RATE_LIMIT_SECONDS["calls"]
+PERIOD = PolygonConfig.API_RATE_LIMIT_SECONDS["period"]
 
 
 def get_ticker_types(client: RESTClient, asset_class: str, locale: str) -> pl.DataFrame:
@@ -99,7 +102,6 @@ def get_grouped_daily_aggs(
     date: str,
     **kwargs,
 ):
-
     grouped = client.get_grouped_daily_aggs(date=date, **kwargs)
 
     if grouped == []:
@@ -130,8 +132,7 @@ def get_grouped_daily_aggs(
 
 def get_date_range_grouped_daily_aggs(
     client: RESTClient, start_date: str, end_date: str, **kwargs
-):
-
+) -> pl.DataFrame:
     df_list = []
     date_ranges_list = date_range(
         start_date=start_date, end_date=end_date, skip_weekends=True
