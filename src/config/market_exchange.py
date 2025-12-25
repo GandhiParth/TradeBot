@@ -9,4 +9,5 @@ MARKET_EXCHANGE = {
         Exchange.NYSE,
         Exchange.NASDAQ,
     },
+    Market.INDIA: {Exchange.NSE},
 }

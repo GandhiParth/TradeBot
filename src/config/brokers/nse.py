@@ -1,4 +1,5 @@
 class NSEConfig:
+    NAME = "NSE"
 
     CLASSIFICATION_TABLE_ID = "industry_classification"
 
