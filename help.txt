@@ -1,1 +1,2 @@
-python3 -m src.jobs.fetch_nse_hist --end_date 2025-12-12 --lookback 10
+ python3 -m src.jobs.nse_classification --end_date 2025-12-25
+ python3 -m src.jobs.scanner --fetch --run_mode 1 --end_date 2025-12-25 --adr_cutoff 3.5
