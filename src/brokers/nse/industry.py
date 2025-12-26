@@ -81,6 +81,7 @@ def prepare_symbol_list(
         .filter(pl.col("filter_suffix").is_in(["RR", "IV", "EQ"]))
         .remove(pl.col("segment") == "INDICES")
         .filter(pl.col("search_symbol").is_not_null())
+        .remove(pl.col("search_symbol").str.ends_with(suffix="INAV"))
         .select("search_symbol")
         .collect()
     )
