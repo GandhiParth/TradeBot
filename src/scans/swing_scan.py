@@ -198,7 +198,6 @@ def basic_scan(data: pl.LazyFrame, conf: dict) -> pl.LazyFrame:
         (pl.col("all_data_flag") == True)
         & (pl.col("close_ema_9") >= pl.col("close_sma_50"))
         & (pl.col("close_ema_21") >= pl.col("close_sma_50"))
-        & (pl.col("volume_sma_20") >= conf["volume_threshold"])
     ).filter(pct_gain_expr)
 
     return res

@@ -88,8 +88,6 @@ def pullback_filter(
         "mid_down_streak"
     )
 
-    _rvol_cutoff = 110
-
     df = add_basic_indicators(data=data)
     res = (
         df.lazy()
@@ -108,18 +106,30 @@ def pullback_filter(
                 (
                     ((pl.col("mid_prev_0") - pl.col(col)).abs() * 100 / pl.col(col))
                     <= conf["pullback_near_pct"]
-                ).alias(f"near_{col}")
+                ).alias(f"mid_near_{col}")
+                for col in ["close_ema_9", "close_ema_21", "close_sma_50"]
+            ]
+            + [
+                (
+                    ((pl.col("low") - pl.col(col)).abs() * 100 / pl.col(col))
+                    <= conf["pullback_near_pct"]
+                ).alias(f"low_near_{col}")
                 for col in ["close_ema_9", "close_ema_21", "close_sma_50"]
             ]
         )
         .with_columns(mid_down_streak_expr)
         .filter(
             (
-                (pl.col("near_close_ema_9") == True)
-                | (pl.col("near_close_ema_21") == True)
-                | (pl.col("near_close_sma_50") == True)
-                # & (pl.col("adr_pct_20") >= adr_cutoff)
-                & (pl.col("rvol_pct") <= _rvol_cutoff)
+                (
+                    (pl.col("mid_near_close_ema_9") == True)
+                    | (pl.col("mid_near_close_ema_21") == True)
+                    | (pl.col("mid_near_close_sma_50") == True)
+                    | (pl.col("low_near_close_ema_9") == True)
+                    | (pl.col("low_near_close_ema_21") == True)
+                    | (pl.col("low_near_close_sma_50") == True)
+                )
+                & (pl.col("mid_down_streak") > 0)
+                & (pl.col("rvol_pct") <= conf["rvol_pct_cutoff"])
             )
         )
         .with_columns(
@@ -134,10 +144,6 @@ def pullback_filter(
         .with_row_index(name="rank", offset=1)
         .select(~cs.starts_with("mid_prev"))
     ).collect()
-
-    # logger.info(
-    #     f"PullBack filter with ADR Cutoff >= {adr_cutoff} & RVOL PCT <= {_rvol_cutoff}"
-    # )
 
     return res
 

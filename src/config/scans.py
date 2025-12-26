@@ -1,6 +1,5 @@
 from src.config.market import Market
 
-_VOLUME_THRESHOLD = 10_00_00
 
 _INDIA_LOOKBACK_DAYS_TO_MIN_RETURN_PCT = {
     1: 4.99,  # close today ≥ close 1 day ago * 1.05
@@ -16,9 +15,9 @@ _US_LOOKBACK_DAYS_TO_MIN_RETURN_PCT = {
     125: 100,  # close today ≥ close 125 days ago * 2
 }
 
-_MID_DOWN_COUNT_THRESHOLD = 2
 _PULLBACK_NEAR_PCT = 2  # in %
 _PULLBACK_DAYS = 10
+_RVOL_PCT_CUTOFF = 100
 
 _VCP_FILTER_CONF = {
     "timeframe": 252,
@@ -32,13 +31,11 @@ scans_conf = {
     Market.INDIA_EQUITIES: {
         "months_lookback": 3,
         "data_lookback_days": 500,
-        "volume_threshold": _VOLUME_THRESHOLD,
         "lookback_min_return_pct": _INDIA_LOOKBACK_DAYS_TO_MIN_RETURN_PCT,
     },
     Market.US_EQUITIES: {
         "months_lookback": 3,
         "data_lookback_days": 500,
-        "volume_threshold": _VOLUME_THRESHOLD,
         "lookback_min_return_pct": _US_LOOKBACK_DAYS_TO_MIN_RETURN_PCT,
     },
 }
@@ -47,15 +44,16 @@ filter_conf = {
     Market.INDIA_EQUITIES: {
         "pullback": {
             "pullback_near_pct": _PULLBACK_NEAR_PCT,
-            "mid_down_strak": _MID_DOWN_COUNT_THRESHOLD,
             "pullback_days": _PULLBACK_DAYS,
+            "rvol_pct_cutoff": _RVOL_PCT_CUTOFF,
         },
         "vcp": {**_VCP_FILTER_CONF},
     },
     Market.US_EQUITIES: {
         "pullback": {
             "pullback_near_pct": _PULLBACK_NEAR_PCT,
-            "mid_down_strak": _MID_DOWN_COUNT_THRESHOLD,
+            "pullback_days": _PULLBACK_DAYS,
+            "rvol_pct_cutoff": _RVOL_PCT_CUTOFF,
         },
         "vcp": {**_VCP_FILTER_CONF},
     },

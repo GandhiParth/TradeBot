@@ -10,11 +10,15 @@ from src.config.exchange_tables import EXCHG_TABLES
 from src.config.run_modes import RUN_MODES
 from src.config.scans import filter_conf, scans_conf
 from src.config.storage_layout import StorageLayout
-from src.scans.filter_scan import (adr_filter, basic_filter, pullback_filter,
-                                   pullback_reversal_filter, sma_200_filter,
-                                   vcp_filter)
-from src.scans.swing_scan import (basic_scan, find_stocks, high_adr_scan,
-                                  prep_scan_data)
+from src.scans.filter_scan import (
+    adr_filter,
+    basic_filter,
+    pullback_filter,
+    pullback_reversal_filter,
+    sma_200_filter,
+    vcp_filter,
+)
+from src.scans.swing_scan import basic_scan, find_stocks, high_adr_scan, prep_scan_data
 from src.utils import setup_logger
 
 logger = logging.getLogger(__name__)
@@ -179,15 +183,15 @@ def _run_filter_scan(
     logger.info(f"# Stocks in SMA 200 Filter: {sma_200_filter_df.shape[0]}")
 
     # ADR filter
-    sma_200_filter_stocks = sma_200_filter_df.get_column("symbol").to_list()
-    data = data.filter(pl.col("symbol").is_in(sma_200_filter_stocks))
+    # sma_200_filter_stocks = sma_200_filter_df.get_column("symbol").to_list()
+    # data = data.filter(pl.col("symbol").is_in(sma_200_filter_stocks))
     adr_filter_df = adr_filter(data=data, adr_cutoff=adr_cutoff, end_date=end_date)
     adr_filter_df.write_csv(filters_path / "adr_filter.csv")
     logger.info(f"# Stocks in ADR Filter: {adr_filter_df.shape[0]}")
 
     # Final ADR Filter
-    adr_filter_stocks = adr_filter_df.get_column("symbol").to_list()
-    data = data.filter(pl.col("symbol").is_in(adr_filter_stocks))
+    # adr_filter_stocks = adr_filter_df.get_column("symbol").to_list()
+    # data = data.filter(pl.col("symbol").is_in(adr_filter_stocks))
 
     # Pullback filter
     pullback_df = pullback_filter(
