@@ -9,7 +9,7 @@ from selenium.webdriver.firefox.options import Options as FirefoxOptions
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 from sqlalchemy import create_engine, text
-
+import random
 from src.config.brokers.nse import NSEConfig
 from src.utils import setup_logger
 
@@ -100,6 +100,11 @@ def prepare_symbol_list(
     return fetch_symbols
 
 
+def _get_element_safely(driver, by, value, timeout=10):
+    """Wait for element to be clickable and return it."""
+    return WebDriverWait(driver, timeout).until(EC.element_to_be_clickable((by, value)))
+
+
 def fetch_nse_industry_classification(
     symbol_list: list[str],
     fetch_date: str,
@@ -111,11 +116,17 @@ def fetch_nse_industry_classification(
     logger.info("Starting NSE Classification")
 
     options = FirefoxOptions()
-    options.add_argument("--headless")
+    options.set_preference(
+        "general.useragent.override",
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:120.0) Gecko/20100101 Firefox/120.0",
+    )
+    options.set_preference("dom.webdriver.enabled", False)
+    # options.add_argument("--headless")
     driver = webdriver.Firefox(options=options)
     driver.get(conf.URL)
     driver.implicitly_wait(15)
     driver.maximize_window()
+    time.sleep(random.uniform(3, 6))
 
     for symbol in symbol_list:
         if count % 100 == 0:
@@ -129,15 +140,22 @@ def fetch_nse_industry_classification(
                 "//input[@role='combobox' and contains(@class,'rbt-input-main')]",
             )
 
+            # search_box = _get_element_safely(
+            #     driver,
+            #     By.XPATH,
+            #     "//input[@role='combobox' and contains(@class,'rbt-input-main')]",
+            # )
+
             search_box.click()
             search_box.send_keys(Keys.CONTROL, "a")
             search_box.send_keys(Keys.BACKSPACE)
+            # search_box.clear()  # Standard clear
 
             for ch in symbol:
-                time.sleep(0.3)
+                time.sleep(random.uniform(0.3, 1))
                 search_box.send_keys(ch)
 
-            time.sleep(0.7)
+            time.sleep(random.uniform(0.5, 1.5))
             search_box.send_keys(Keys.ARROW_DOWN)
             search_box.send_keys(Keys.ENTER)
 
@@ -151,7 +169,7 @@ def fetch_nse_industry_classification(
                 )
             )
 
-            time.sleep(2.5)
+            time.sleep(random.uniform(2, 4))
 
             info_btn = driver.find_element(
                 By.XPATH,
@@ -159,7 +177,7 @@ def fetch_nse_industry_classification(
             )
             driver.execute_script("arguments[0].click();", info_btn)
 
-            time.sleep(1.5)
+            time.sleep(random.uniform(0.7, 3))
 
             macro_sector = driver.find_element(
                 By.XPATH,
@@ -179,14 +197,14 @@ def fetch_nse_industry_classification(
                 "//td[normalize-space()='Basic Industry']/following-sibling::td",
             ).text
 
-            time.sleep(1.5)
+            time.sleep(random.uniform(1, 2))
 
             driver.execute_script(
                 "arguments[0].click();",
                 driver.find_element(By.XPATH, "//button[@aria-label='Close']"),
             )
 
-            time.sleep(1)  # allow modal overlay to disappear
+            time.sleep(random.uniform(0.5, 1.5))  # allow modal overlay to disappear
 
             market_cap = driver.find_element(
                 By.XPATH,
@@ -228,7 +246,7 @@ def fetch_nse_industry_classification(
             )
 
             count += 1
-            time.sleep(5)
+            time.sleep(random.uniform(3, 6))
 
         except Exception as e:
             logger.error(f"Failed for {symbol}: {e}")
@@ -250,11 +268,12 @@ def fetch_nse_industry_classification(
 
             driver.quit()
             options = FirefoxOptions()
-            options.add_argument("--headless")
+            # options.add_argument("--headless")
             driver = webdriver.Firefox(options=options)
             driver.get(conf.URL)
             driver.implicitly_wait(15)
             driver.maximize_window()
+            time.sleep(random.uniform(3, 6))
 
     driver.quit()
 
