@@ -41,6 +41,15 @@ class StorageLayout:
         return out
 
     @staticmethod
+    def analysis_dir(run_date: str, market: str, exchange: str) -> Path:
+        out = (
+            StorageLayout.runs_dir(run_date=run_date, market=market, exchange=exchange)
+            / "analysis"
+        )
+        logger.debug(f"Returning path: {out}")
+        return out
+
+    @staticmethod
     def db_path(market: str, exchange: str) -> Path:
         out = StorageLayout.data_dir(market=market, exchange=exchange) / "data.db"
         logger.debug(f"Returning path: {out}")
