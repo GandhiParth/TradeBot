@@ -1,16 +1,17 @@
-import logging
-from src.utils import setup_logger
 import argparse
+import logging
 
 import polars as pl
 import polars.selectors as cs
-from src.config.storage_layout import StorageLayout
-from src.config.market import Market
-from src.config.exchange import Exchange
-from src.config.data_source import DataSource
+
 from src.config.brokers.nse import NSEConfig
+from src.config.data_source import DataSource
+from src.config.exchange import Exchange
+from src.config.market import Market
+from src.config.storage_layout import StorageLayout
 from src.data_source.chartsmaze.helper import industry_to_sector
 from src.data_source.chartsmaze.sectors import sectors as cmaze_sectors
+from src.utils import setup_logger
 
 logger = logging.getLogger(__name__)
 setup_logger()
@@ -65,7 +66,6 @@ def _fetch_cmaze_file(end_date: str, sectors_mapping: dict) -> pl.LazyFrame:
 
 
 def _fetch_nse_sectors() -> pl.LazyFrame:
-
     db_path = StorageLayout.db_path(market=Market.INDIA, exchange=Exchange.NSE)
 
     max_date_query = f"""

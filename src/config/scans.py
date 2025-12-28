@@ -1,6 +1,5 @@
 from src.config.market import Market
 
-
 _INDIA_LOOKBACK_DAYS_TO_MIN_RETURN_PCT = {
     1: 4.99,  # close today ≥ close 1 day ago * 1.05
     22: 10,  # close today ≥ close 22 days ago * 1.10

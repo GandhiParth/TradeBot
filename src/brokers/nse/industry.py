@@ -1,4 +1,5 @@
 import logging
+import random
 import time
 
 import polars as pl
@@ -9,7 +10,7 @@ from selenium.webdriver.firefox.options import Options as FirefoxOptions
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 from sqlalchemy import create_engine, text
-import random
+
 from src.config.brokers.nse import NSEConfig
 from src.utils import setup_logger
 
