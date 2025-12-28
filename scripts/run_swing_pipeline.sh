@@ -88,7 +88,7 @@ echo "========================================"
 # Build command once
 # -----------------------------
 CMD=(
-  python3 -m src.jobs.scanner
+  time python3 -m src.jobs.scanner
   --run_mode "${RUN_MODE}"
   --end_date "${END_DATE}"
   --adr_cutoff "${ADR_CUTOFF}"
@@ -111,7 +111,7 @@ echo "SCAN COMPLETED"
 if [[ "${RUN_MODE}" == "1" ]]; then
   echo "RUN_MODE=1 detected → running NSE analysis script"
 
-  python3 -m src.jobs.nse_analysis \
+  time python3 -m src.jobs.nse_analysis \
     --end_date "${END_DATE}" 
 
   rclone sync /home/parthgandhi/TradeBot/storage/data/IND/ChartsMaze gdrive:Backup/SwingTrade/ChartsMaze/RS --progress
