@@ -88,7 +88,7 @@ echo "========================================"
 # Build command once
 # -----------------------------
 CMD=(
-  time python3 -m src.jobs.scanner
+  python3 -m src.jobs.scanner
   --run_mode "${RUN_MODE}"
   --end_date "${END_DATE}"
   --adr_cutoff "${ADR_CUTOFF}"
@@ -102,7 +102,7 @@ fi
 # -----------------------------
 # Execute
 # -----------------------------
-"${CMD[@]}"
+time "${CMD[@]}"
 echo "SCAN COMPLETED"
 
 # -----------------------------
