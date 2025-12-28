@@ -121,7 +121,7 @@ def fetch_nse_industry_classification(
         "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:120.0) Gecko/20100101 Firefox/120.0",
     )
     options.set_preference("dom.webdriver.enabled", False)
-    # options.add_argument("--headless")
+    options.add_argument("--headless")
     driver = webdriver.Firefox(options=options)
     driver.get(conf.URL)
     driver.implicitly_wait(15)
@@ -268,7 +268,7 @@ def fetch_nse_industry_classification(
 
             driver.quit()
             options = FirefoxOptions()
-            # options.add_argument("--headless")
+            options.add_argument("--headless")
             driver = webdriver.Firefox(options=options)
             driver.get(conf.URL)
             driver.implicitly_wait(15)
