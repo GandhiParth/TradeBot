@@ -80,7 +80,7 @@ def _fetch_nse_sectors() -> pl.LazyFrame:
     logger.info(f"MAX DATE of NSE SECTORS: {max_date}")
 
     industry_query = f"""
-    select *
+    select distinct *
     from '{NSEConfig.CLASSIFICATION_TABLE_ID}'
     where timestamp = '{max_date}'
     """
