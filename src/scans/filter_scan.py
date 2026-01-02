@@ -322,7 +322,6 @@ def pullback_reversal_filter(
 def insider_bars_filter(
     data: pl.LazyFrame, end_date: datetime, conf: dict
 ) -> pl.DataFrame:
-
     def _contraction_valid_expr(L: int):
         return (pl.col("high").rolling_max(L - 1) <= pl.col("high").shift(L - 1)) & (
             pl.col("low").rolling_min(L - 1) >= pl.col("low").shift(L - 1)
