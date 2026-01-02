@@ -26,6 +26,8 @@ _VCP_FILTER_CONF = {
     "pivot_width_limit_pct": 10,  # in % eg: 10%
 }
 
+_INSIDE_BARS_FILTER_CONF = {"min_pivot_length": 3, "max_pivot_length": 10}
+
 scans_conf = {
     Market.INDIA_EQUITIES: {
         "months_lookback": 3,
@@ -47,6 +49,7 @@ filter_conf = {
             "rvol_pct_cutoff": _RVOL_PCT_CUTOFF,
         },
         "vcp": {**_VCP_FILTER_CONF},
+        "inside_bars": {**_INSIDE_BARS_FILTER_CONF},
     },
     Market.US_EQUITIES: {
         "pullback": {

@@ -317,3 +317,42 @@ def pullback_reversal_filter(
     )
 
     return res
+
+
+def insider_bars_filter(
+    data: pl.LazyFrame, end_date: datetime, conf: dict
+) -> pl.DataFrame:
+
+    def _contraction_valid_expr(L: int):
+        return (pl.col("high").rolling_max(L - 1) <= pl.col("high").shift(L - 1)) & (
+            pl.col("low").rolling_min(L - 1) >= pl.col("low").shift(L - 1)
+        )
+
+    MIN_L = conf["min_pivot_length"]
+    MAX_L = conf["max_pivot_length"]
+
+    df = add_basic_indicators(data)
+    res = (
+        df.lazy()
+        .with_columns(
+            [
+                pl.when(_contraction_valid_expr(L))
+                .then(pl.lit(L))
+                .otherwise(None)
+                .alias(f"pivot_len_{L}")
+                for L in range(MIN_L, MAX_L + 1)
+            ]
+        )
+        .with_columns(
+            pl.max_horizontal(
+                [pl.col(f"pivot_len_{L}") for L in range(MIN_L, MAX_L + 1)]
+            ).alias("max_pivot_length")
+        )
+        .filter(
+            (pl.col("max_pivot_length") >= MIN_L) & (pl.col("timestamp") == end_date)
+        )
+        .select("symbol", "max_pivot_length", "adr_pct_20", "rvol_pct")
+        .collect()
+    )
+
+    return res

@@ -17,6 +17,7 @@ from src.scans.filter_scan import (
     pullback_reversal_filter,
     sma_200_filter,
     vcp_filter,
+    insider_bars_filter,
 )
 from src.scans.swing_scan import basic_scan, find_stocks, high_adr_scan, prep_scan_data
 from src.utils import setup_logger
@@ -214,6 +215,13 @@ def _run_filter_scan(
     )
     reversal_df.write_csv(filters_path / "reversal_filter.csv")
     logger.info(f"# Stocks in Pullback reversal: {reversal_df.shape[0]}")
+
+    ## Inside Bars
+    inside_df = insider_bars_filter(
+        data=data, end_date=end_date, conf=filters_conf["inside_bars"]
+    )
+    inside_df.write_csv(filters_path / "inside_bars_filter.csv")
+    logger.info(f"# Stocks in Inside Bars: {inside_df.shape[0]}")
 
 
 if __name__ == "__main__":
