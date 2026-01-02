@@ -111,7 +111,7 @@ def _combine_filers_files(end_date: str) -> pl.LazyFrame:
     )
 
     df_list = []
-    for filter_type in ["sma_200", "adr", "pullback", "reversal", "vcp"]:
+    for filter_type in ["sma_200", "adr", "pullback", "reversal", "vcp", "inside_bars"]:
         df = (
             pl.scan_csv(filters_path / f"{filter_type}_filter.csv")
             .with_columns(pl.lit(True).alias(f"{filter_type}_filter_flag"))
