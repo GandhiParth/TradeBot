@@ -1,0 +1,36 @@
+//@version=6
+indicator("EMA9 / EMA21 / SMA50", overlay=true)
+
+// === Moving Averages ===
+ema5 = ta.ema(close, 5)
+ema9 = ta.ema(close, 9)
+ema21 = ta.ema(close, 21)
+sma50 = ta.sma(close, 50)
+sma200 = ta.sma(close, 200)
+
+// plot(ema5, color=#ED725A, linewidth=2, title="EMA 5")
+plot(ema9, color=#FFD700, linewidth=2, title="EMA 9")
+plot(ema21, color=#FF00FF, linewidth=2, title="EMA 21")
+plot(sma50, color=#FFFFFF, linewidth=2, title="SMA 50")
+plot(sma200, color=#b2beb5, linewidth=1, title="SMA 200")
+
+
+// === 52-Week High/Low ===
+length = input.int(252, "Lookback Period (days)", minval=1)
+weekHigh = ta.highest(high, length)
+weekLow  = ta.lowest(low, length)
+
+// plot(weekHigh, "52-Week High", color=color.green, linewidth=1)
+// plot(weekLow, "52-Week Low", color=color.red, linewidth=1)
+
+// --- Relative Volume (RVOL) ---
+vol_sma50 = ta.sma(volume, 50)
+rvol = vol_sma50 == 0 ? na : (volume / vol_sma50) * 100
+rvol_rounded = na(rvol) ? na : math.round(rvol)
+rvol_text = na(rvol_rounded) ? "NA" : str.tostring(rvol_rounded)
+
+// --- Table (fixed top-right) ---
+var table rvol_table = table.new(position.top_right, 1, 1, bgcolor = color.new(color.yellow, 0), frame_width = 1, frame_color = color.black, border_width = 1)
+
+if barstate.islast
+    table.cell(rvol_table, 0, 0, "RVOL: " + rvol_text + "%", text_color = color.black, text_size = size.normal, bgcolor = color.new(color.yellow, 0))
