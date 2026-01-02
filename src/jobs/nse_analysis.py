@@ -155,7 +155,7 @@ if __name__ == "__main__":
         .collect()
     )
 
+    res.write_csv(analysis_path / "overall_filter_result.csv")
+
     res_cutoff = res.filter(pl.col("rs_rating") >= rs_cutoff)
     logger.info(f"After RS filter: {res_cutoff.shape}")
-
-    res.write_csv(analysis_path / "overall_filter_result.csv")
