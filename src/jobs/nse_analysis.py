@@ -164,7 +164,8 @@ def _pullback_filters_file(end_date: str) -> pl.LazyFrame:
             pl.scan_csv(filters_path / f"{filter_type}_filter.csv")
             .with_columns(pl.lit(True).alias(f"{filter_type}_filter_flag"))
             .select(
-                "pullback_filter_flag",
+                "symbol",
+                f"{filter_type}_filter_flag",
                 "mid_near_close_ema_9",
                 "mid_near_close_ema_21",
                 "mid_near_close_sma_50",
