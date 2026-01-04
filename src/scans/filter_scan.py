@@ -128,7 +128,7 @@ def pullback_filter(
                     | (pl.col("low_near_close_ema_21") == True)
                     | (pl.col("low_near_close_sma_50") == True)
                 )
-                & (pl.col("mid_down_streak") > 0)
+                # & (pl.col("mid_down_streak") > 0)
                 & (pl.col("rvol_pct") <= conf["rvol_pct_cutoff"])
             )
         )

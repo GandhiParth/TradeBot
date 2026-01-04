@@ -125,11 +125,67 @@ def _combine_filers_files(end_date: str) -> pl.LazyFrame:
         .join(df_list[2], on="symbol", how="left")
         .join(df_list[3], on="symbol", how="left")
         .join(df_list[4], on="symbol", how="left")
+        .join(df_list[5], on="symbol", how="left")
         .with_columns(cs.ends_with("flag").fill_null(False))
         .collect()
     )
 
-    logger.info(f"Before RS filter: {res.shape}")
+    logger.info(f"Overall Before RS filter: {res.shape}")
+    return res.lazy()
+
+
+def _pullback_filters_file(end_date: str) -> pl.LazyFrame:
+    filters_path = StorageLayout.filters_dir(
+        run_date=end_date, market=Market.INDIA_EQUITIES, exchange=Exchange.NSE
+    )
+
+    basic_filter = (
+        pl.scan_csv(filters_path / "basic_filter.csv")
+        .with_columns(
+            pl.col("timestamp")
+            .str.strptime(pl.Datetime, format="%Y-%m-%dT%H:%M:%S%.f")
+            .cast(pl.Date)
+            .alias("timestamp")
+        )
+        .select("timestamp", "symbol")
+    )
+
+    df_list = []
+    for filter_type in ["sma_200", "adr", "reversal"]:
+        df = (
+            pl.scan_csv(filters_path / f"{filter_type}_filter.csv")
+            .with_columns(pl.lit(True).alias(f"{filter_type}_filter_flag"))
+            .select("symbol", f"{filter_type}_filter_flag")
+        )
+        df_list.append(df)
+
+    for filter_type in ["pullback"]:
+        df = (
+            pl.scan_csv(filters_path / f"{filter_type}_filter.csv")
+            .with_columns(pl.lit(True).alias(f"{filter_type}_filter_flag"))
+            .select(
+                "pullback_filter_flag",
+                "mid_near_close_ema_9",
+                "mid_near_close_ema_21",
+                "mid_near_close_sma_50",
+                "low_near_close_ema_9",
+                "low_near_close_ema_21",
+                "low_near_close_sma_50",
+                "mid_down_streak",
+            )
+        )
+        df_list.append(df)
+
+    res = (
+        basic_filter.join(df_list[0], on="symbol", how="left")
+        .join(df_list[1], on="symbol", how="left")
+        .join(df_list[2], on="symbol", how="left")
+        .join(df_list[3], on="symbol", how="left")
+        .with_columns(cs.ends_with("flag").fill_null(False))
+        .collect()
+    )
+
+    logger.info(f"Pullback Before RS filter: {res.shape}")
     return res.lazy()
 
 
@@ -158,4 +214,17 @@ if __name__ == "__main__":
     res.write_csv(analysis_path / "overall_filter_result.csv")
 
     res_cutoff = res.filter(pl.col("rs_rating") >= rs_cutoff)
-    logger.info(f"After RS filter: {res_cutoff.shape}")
+    logger.info(f"Overall After RS filter: {res_cutoff.shape}")
+
+    res = _pullback_filters_file(end_date=end_date)
+
+    res = (
+        res.join(cmaze_df, on="symbol", how="left")
+        .join(nse_classify_df, on="symbol", how="left")
+        .collect()
+    )
+
+    res.write_csv(analysis_path / "pullback_filter_result.csv")
+
+    res_cutoff = res.filter(pl.col("rs_rating") >= rs_cutoff)
+    logger.info(f"Pullback After RS filter: {res_cutoff.shape}")
