@@ -10,16 +10,12 @@ from src.config.exchange_tables import EXCHG_TABLES
 from src.config.run_modes import RUN_MODES
 from src.config.scans import filter_conf, scans_conf
 from src.config.storage_layout import StorageLayout
-from src.scans.filter_scan import (
-    adr_filter,
-    basic_filter,
-    insider_bars_filter,
-    pullback_filter,
-    pullback_reversal_filter,
-    sma_200_filter,
-    vcp_filter,
-)
-from src.scans.swing_scan import basic_scan, find_stocks, high_adr_scan, prep_scan_data
+from src.scans.filter_scan import (adr_filter, basic_filter,
+                                   insider_bars_filter, pullback_filter,
+                                   pullback_reversal_filter, sma_200_filter,
+                                   vcp_filter)
+from src.scans.swing_scan import (basic_scan, find_stocks, high_adr_scan,
+                                  prep_scan_data)
 from src.utils import setup_logger
 
 logger = logging.getLogger(__name__)

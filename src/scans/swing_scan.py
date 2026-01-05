@@ -195,9 +195,11 @@ def basic_scan(data: pl.LazyFrame, conf: dict) -> pl.LazyFrame:
         ],
     )
     res = data.filter(
-        (pl.col("all_data_flag") == True)
-        # & (pl.col("close_ema_9") >= pl.col("close_sma_50")) # commenting out ema filter and keep only in filter_scan
-        # & (pl.col("close_ema_21") >= pl.col("close_sma_50"))
+        (
+            pl.col("all_data_flag") == True
+            # & (pl.col("close_ema_9") >= pl.col("close_sma_50")) # commenting out ema filter and keep only in filter_scan
+            # & (pl.col("close_ema_21") >= pl.col("close_sma_50"))
+        )
     ).filter(pct_gain_expr)
 
     return res
