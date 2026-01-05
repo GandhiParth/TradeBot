@@ -40,7 +40,7 @@ class Polygon(BaseBroker):
             start_date=self._start_date,
             end_date=self._end_date,
             db_conn=f"sqlite:///{self._db_path}",
-            insert_table_name=self._tables_name["ohlcv_daily"],
+            insert_table_name=self._tables_name["equity_ohlcv_daily"],
         )
 
     def __call__(self):

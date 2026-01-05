@@ -60,8 +60,8 @@ class Kite(BaseBroker):
             oi_flag=False,
             continuous_flag=False,
             db_conn=f"sqlite:///{self._db_path}",
-            failed_table_name=self._tables_name["ohlcv_failed"],
-            insert_table_name=self._tables_name["ohlcv_daily"],
+            failed_table_name=self._tables_name["equity_ohlcv_failed"],
+            insert_table_name=self._tables_name["equity_ohlcv_daily"],
         )
 
     def __call__(self):
