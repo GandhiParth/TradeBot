@@ -10,12 +10,13 @@ from src.config.exchange_tables import EXCHG_TABLES
 from src.config.run_modes import RUN_MODES
 from src.config.scans import filter_conf, scans_conf
 from src.config.storage_layout import StorageLayout
-from src.scans.filter_scan import (adr_filter, basic_filter,
-                                   insider_bars_filter, pullback_filter,
-                                   pullback_reversal_filter, sma_200_filter,
-                                   vcp_filter)
-from src.scans.swing_scan import (basic_scan, find_stocks, high_adr_scan,
-                                  prep_scan_data)
+from src.scans.filter_scan import (
+    adr_filter,
+    basic_filter,
+    pullback_filter,
+    sma_200_filter,
+)
+from src.scans.swing_scan import basic_scan, find_stocks, high_adr_scan, prep_scan_data
 from src.utils import setup_logger
 
 logger = logging.getLogger(__name__)
@@ -200,24 +201,24 @@ def _run_filter_scan(
     pullback_df.write_parquet(filters_path / "pullback_filter.parquet")
     logger.info(f"# Stocks in PullBack: {pullback_df.shape[0]}")
 
-    # VCP filter
-    vcp_df = vcp_filter(data=data, end_date=end_date, conf=filters_conf["vcp"])
-    vcp_df.write_csv(filters_path / "vcp_filter.csv")
-    logger.info(f"# Stocks in VCP: {vcp_df.shape[0]}")
+    # # VCP filter
+    # vcp_df = vcp_filter(data=data, end_date=end_date, conf=filters_conf["vcp"])
+    # vcp_df.write_csv(filters_path / "vcp_filter.csv")
+    # logger.info(f"# Stocks in VCP: {vcp_df.shape[0]}")
 
-    ## Pullback Reversal
-    reversal_df = pullback_reversal_filter(
-        data=data, end_date=end_date, conf=filters_conf["pullback"]
-    )
-    reversal_df.write_csv(filters_path / "reversal_filter.csv")
-    logger.info(f"# Stocks in Pullback reversal: {reversal_df.shape[0]}")
+    # ## Pullback Reversal
+    # reversal_df = pullback_reversal_filter(
+    #     data=data, end_date=end_date, conf=filters_conf["pullback"]
+    # )
+    # reversal_df.write_csv(filters_path / "reversal_filter.csv")
+    # logger.info(f"# Stocks in Pullback reversal: {reversal_df.shape[0]}")
 
-    ## Inside Bars
-    inside_df = insider_bars_filter(
-        data=data, end_date=end_date, conf=filters_conf["inside_bars"]
-    )
-    inside_df.write_csv(filters_path / "inside_bars_filter.csv")
-    logger.info(f"# Stocks in Inside Bars: {inside_df.shape[0]}")
+    # ## Inside Bars
+    # inside_df = insider_bars_filter(
+    #     data=data, end_date=end_date, conf=filters_conf["inside_bars"]
+    # )
+    # inside_df.write_csv(filters_path / "inside_bars_filter.csv")
+    # logger.info(f"# Stocks in Inside Bars: {inside_df.shape[0]}")
 
 
 if __name__ == "__main__":
