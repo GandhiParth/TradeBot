@@ -112,13 +112,9 @@ def _combine_filers_files(end_date: str) -> pl.LazyFrame:
 
     df_list = []
     for filter_type in [
-        "basic",
         "sma_200",
         "adr",
         "pullback",
-        "reversal",
-        "vcp",
-        "inside_bars",
     ]:
         df = (
             pl.scan_csv(filters_path / f"{filter_type}_filter.csv")
@@ -131,10 +127,6 @@ def _combine_filers_files(end_date: str) -> pl.LazyFrame:
         basic_filter.join(df_list[0], on="symbol", how="left")
         .join(df_list[1], on="symbol", how="left")
         .join(df_list[2], on="symbol", how="left")
-        .join(df_list[3], on="symbol", how="left")
-        .join(df_list[4], on="symbol", how="left")
-        .join(df_list[5], on="symbol", how="left")
-        .join(df_list[6], on="symbol", how="left")
         .with_columns(cs.ends_with("flag").fill_null(False))
         .collect()
     )
@@ -160,7 +152,7 @@ def _pullback_filters_file(end_date: str) -> pl.LazyFrame:
     )
 
     df_list = []
-    for filter_type in ["basic", "sma_200", "adr", "reversal"]:
+    for filter_type in ["sma_200", "adr"]:
         df = (
             pl.scan_csv(filters_path / f"{filter_type}_filter.csv")
             .with_columns(pl.lit(True).alias(f"{filter_type}_filter_flag"))
@@ -190,8 +182,6 @@ def _pullback_filters_file(end_date: str) -> pl.LazyFrame:
         basic_filter.join(df_list[0], on="symbol", how="left")
         .join(df_list[1], on="symbol", how="left")
         .join(df_list[2], on="symbol", how="left")
-        .join(df_list[3], on="symbol", how="left")
-        .join(df_list[4], on="symbol", how="left")
         .with_columns(cs.ends_with("flag").fill_null(False))
         .collect()
     )
