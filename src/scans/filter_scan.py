@@ -240,16 +240,6 @@ def sma_200_filter(data: pl.DataFrame, end_date: datetime) -> pl.DataFrame:
 
     res = (
         df.lazy()
-        .with_columns(
-            [
-                pl.col("close")
-                .rolling_mean(window_size=n)
-                .over(partition_by="symbol", order_by="timestamp", descending=False)
-                .round(2)
-                .alias(f"close_sma_{n}")
-                for n in [200]
-            ]
-        )
         .filter(
             (pl.col("close_sma_50") >= pl.col("close_sma_200"))
             & (pl.col("close_ema_9") >= pl.col("close_sma_200"))
