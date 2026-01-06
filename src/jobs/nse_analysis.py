@@ -167,12 +167,9 @@ def _pullback_filters_file(end_date: str) -> pl.LazyFrame:
             .select(
                 "symbol",
                 f"{filter_type}_filter_flag",
-                "mid_near_close_ema_9",
-                "mid_near_close_ema_21",
-                "mid_near_close_sma_50",
-                "low_near_close_ema_9",
-                "low_near_close_ema_21",
-                "low_near_close_sma_50",
+                "near_ema_9",
+                "near_ema_21",
+                "near_sma_50",
                 "mid_down_streak",
             )
         )

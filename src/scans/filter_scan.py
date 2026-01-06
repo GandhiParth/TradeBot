@@ -118,18 +118,31 @@ def pullback_filter(
             ]
         )
         .with_columns(mid_down_streak_expr)
+        .with_columns(
+            [
+                (
+                    pl.col(f"mid_near_close_ema_{i}")
+                    | (pl.col(f"low_near_close_ema_{i}"))
+                ).alias(f"near_ema_{i}")
+                for i in [9, 21]
+            ]
+            + [
+                (
+                    pl.col(f"mid_near_close_sma_{i}")
+                    | (pl.col(f"low_near_close_sma_{i}"))
+                ).alias(f"near_sma_{i}")
+                for i in [50]
+            ]
+        )
         .filter(
             (
                 (
-                    (pl.col("mid_near_close_ema_9") == True)
-                    | (pl.col("mid_near_close_ema_21") == True)
-                    | (pl.col("mid_near_close_sma_50") == True)
-                    | (pl.col("low_near_close_ema_9") == True)
-                    | (pl.col("low_near_close_ema_21") == True)
-                    | (pl.col("low_near_close_sma_50") == True)
+                    (pl.col("near_ema_9") == True)
+                    | (pl.col("near_ema_21") == True)
+                    | (pl.col("near_sma_50") == True)
                 )
-                # & (pl.col("mid_down_streak") > 0)
                 & (pl.col("rvol_pct") <= conf["rvol_pct_cutoff"])
+                # & (pl.col("mid_down_streak") > 0)
             )
         )
         .with_columns(
