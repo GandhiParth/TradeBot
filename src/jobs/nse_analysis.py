@@ -31,8 +31,26 @@ def _fetch_cmaze_file(end_date: str, sectors_mapping: dict) -> pl.LazyFrame:
     cmaze_path = StorageLayout.data_dir(market=Market.INDIA, exchange=DataSource.CMAZE)
     cmaze_sectors_df = industry_to_sector(mapping=sectors_mapping).lazy()
 
+    _override_cols = [
+        "Market Cap(Cr.)",
+        "1 Month Returns(%)",
+        "3 Month Returns(%)",
+        "% from 52W High",
+    ]
+
     cmaze_df = (
-        pl.scan_csv(cmaze_path / f"{end_date}.csv")
+        pl.scan_csv(
+            cmaze_path / f"{end_date}.csv",
+            schema_overrides={i: pl.String() for i in _override_cols},
+        )
+        .with_columns(
+            pl.when(pl.col(col) == "NA")
+            .then(None)
+            .otherwise(col)
+            .cast(pl.Float64())
+            .alias(col)
+            for col in _override_cols
+        )
         .join(cmaze_sectors_df, on="Basic Industry", how="left")
         .group_by(pl.exclude("Sector"))
         .agg(pl.col("Sector").str.join(", "))
